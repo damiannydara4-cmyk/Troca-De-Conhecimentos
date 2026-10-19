@@ -1,33 +1,49 @@
+
 import React, { useState } from "react";
+
+// Suas telas
+import Inicio from "./pages/Inicio.jsx";
+import Conhecimentos from "./pages/Conhecimentos.jsx";
+
+// Telas que já existiam no projeto compartilhado
 import FaleComEquipe from "./pages/FaleComEquipe.jsx";
 import MensagemEnviada from "./pages/MensagemEnviada.jsx";
 import ConhecimentoOferecido from "./pages/ConhecimentoOferecido.jsx";
 import CadastroConta from "./pages/CadastroConta.jsx";
 import RecuperarSenha from "./pages/RecuperarSenha.jsx";
 
-
 export default function App() {
-  // Estado para controlar a tela visível no momento:
-  // 'contato' | 'mensagem_enviada' | 'conhecimento_oferecido' | 'cadastro' | 'recuperar_senha'
-  const [telaAtual, setTelaAtual] = useState("cadastro");
-
-  // Guarda o e-mail preenchido no formulário para exibir na tela de confirmação
+  const [telaAtual, setTelaAtual] = useState("inicio");
+  const [abrirOferta, setAbrirOferta] = useState(false);
   const [emailContato, setEmailContato] = useState("");
 
-  // Transição: Formulário submetido -> Tela de Confirmação da Mensagem
+  // Abre a tela de conhecimentos
+  const handleIrParaConhecimentos = () => {
+    setAbrirOferta(false);
+    setTelaAtual("conhecimentos");
+  };
+
+  // Abre conhecimentos com o formulário de oferta
+  const handleOferecerConhecimento = () => {
+    setAbrirOferta(true);
+    setTelaAtual("conhecimentos");
+  };
+
+  // Volta para a página inicial
+  const handleVoltarInicio = () => {
+    setTelaAtual("inicio");
+  };
+
+  // Envia o usuário para a confirmação de contato
   const handleEnviarMensagem = (email) => {
     setEmailContato(email);
     setTelaAtual("mensagem_enviada");
   };
 
-  // Voltar para a tela inicial de Contato
-  const handleVoltarInicio = () => {
-    setTelaAtual("contato");
-  };
-
   return (
     <div className="app-container">
-      {/* Menu fixo no topo para você alternar e testar qualquer uma das telas durante o desenvolvimento */}
+
+      {/* Menu temporário para testar todas as telas */}
       <nav
         style={{
           background: "#111827",
@@ -40,82 +56,61 @@ export default function App() {
           fontSize: "0.85rem",
         }}
       >
-        <span style={{ color: "#A3E635", fontWeight: "bold" }}>
+        <strong style={{ color: "#A3E635" }}>
           Navegação de Teste:
-        </span>
-        <button
-          type="button"
-          onClick={() => setTelaAtual("contato")}
-          style={{
-            background: telaAtual === "contato" ? "#A3E635" : "transparent",
-            color: telaAtual === "contato" ? "#111827" : "#fff",
-            border: "1px solid #A3E635",
-            padding: "0.2rem 0.6rem",
-            cursor: "pointer",
-          }}
-        >
-          1. Fale com a Equipe
-        </button>
-        <button
-          type="button"
-          onClick={() => setTelaAtual("mensagem_enviada")}
-          style={{
-            background:
-              telaAtual === "mensagem_enviada" ? "#A3E635" : "transparent",
-            color: telaAtual === "mensagem_enviada" ? "#111827" : "#fff",
-            border: "1px solid #A3E635",
-            padding: "0.2rem 0.6rem",
-            cursor: "pointer",
-          }}
-        >
-          2. Mensagem Enviada
-        </button>
-        <button
-          type="button"
-          onClick={() => setTelaAtual("conhecimento_oferecido")}
-          style={{
-            background:
-              telaAtual === "conhecimento_oferecido" ? "#A3E635" : "transparent",
-            color: telaAtual === "conhecimento_oferecido" ? "#111827" : "#fff",
-            border: "1px solid #A3E635",
-            padding: "0.2rem 0.6rem",
-            cursor: "pointer",
-          }}
-        >
-          3. Conhecimento Oferecido
-        </button>
-        <button
-          type="button"
-          onClick={() => setTelaAtual("cadastro")}
-          style={{
-            background: telaAtual === "cadastro" ? "#A3E635" : "transparent",
-            color: telaAtual === "cadastro" ? "#111827" : "#fff",
-            border: "1px solid #A3E635",
-            padding: "0.2rem 0.6rem",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          4. Cadastro de Conta
-        </button>
-        <button
-          type="button"
-          onClick={() => setTelaAtual("recuperar_senha")}
-          style={{
-            background:
-              telaAtual === "recuperar_senha" ? "#A3E635" : "transparent",
-            color: telaAtual === "recuperar_senha" ? "#111827" : "#fff",
-            border: "1px solid #A3E635",
-            padding: "0.2rem 0.6rem",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          5. Recuperação de Senha
-        </button>
+        </strong>
+
+        {[
+          ["inicio", "Início"],
+          ["conhecimentos", "Conhecimentos"],
+          ["contato", "Fale com a Equipe"],
+          ["mensagem_enviada", "Mensagem Enviada"],
+          ["conhecimento_oferecido", "Conhecimento Oferecido"],
+          ["cadastro", "Cadastro de Conta"],
+          ["recuperar_senha", "Recuperação de Senha"],
+        ].map(([id, nome]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => {
+              setTelaAtual(id);
+              if (id === "conhecimentos") {
+                setAbrirOferta(false);
+              }
+            }}
+            style={{
+              background:
+                telaAtual === id ? "#A3E635" : "transparent",
+              color:
+                telaAtual === id ? "#111827" : "#fff",
+              border: "1px solid #A3E635",
+              padding: "0.2rem 0.6rem",
+              cursor: "pointer",
+            }}
+          >
+            {nome}
+          </button>
+        ))}
       </nav>
 
-      {/* Renderização Condicional das Telas */}
+      {/* Sua tela inicial */}
+      {telaAtual === "inicio" && (
+        <Inicio
+          onIrParaConhecimentos={handleIrParaConhecimentos}
+          onOferecerConhecimento={handleOferecerConhecimento}
+          onFalarComEquipe={() => setTelaAtual("contato")}
+        />
+      )}
+
+      {/* Sua tela de conhecimentos */}
+      {telaAtual === "conhecimentos" && (
+        <Conhecimentos
+          abrirOferta={abrirOferta}
+          onVoltarInicio={handleVoltarInicio}
+        />
+      )}
+
+      {/* Tela de contato existente */}
       {telaAtual === "contato" && (
         <FaleComEquipe
           onEnviar={handleEnviarMensagem}
@@ -123,6 +118,7 @@ export default function App() {
         />
       )}
 
+      {/* Confirmação de mensagem existente */}
       {telaAtual === "mensagem_enviada" && (
         <MensagemEnviada
           email={emailContato || "usuario@exemplo.com"}
@@ -130,6 +126,7 @@ export default function App() {
         />
       )}
 
+      {/* Componente de conhecimento oferecido existente */}
       {telaAtual === "conhecimento_oferecido" && (
         <ConhecimentoOferecido
           conhecimento="React & Bootstrap"
@@ -137,21 +134,30 @@ export default function App() {
         />
       )}
 
+      {/* Cadastro existente */}
       {telaAtual === "cadastro" && (
         <CadastroConta
-          onIrParaRecuperacao={() => setTelaAtual("recuperar_senha")}
+          onIrParaRecuperacao={() =>
+            setTelaAtual("recuperar_senha")
+          }
           onVoltar={handleVoltarInicio}
-          onEntrar={() => alert("Navegação para Tela de Login (exclusivamente visual)")}
+          onEntrar={() =>
+            alert("Navegação para Tela de Login (exclusivamente visual)")
+          }
         />
       )}
 
+      {/* Recuperação de senha existente */}
       {telaAtual === "recuperar_senha" && (
         <RecuperarSenha
           onIrParaCadastro={() => setTelaAtual("cadastro")}
           onVoltar={handleVoltarInicio}
-          onEntrar={() => alert("Navegação para Tela de Login (exclusivamente visual)")}
+          onEntrar={() =>
+            alert("Navegação para Tela de Login (exclusivamente visual)")
+          }
         />
       )}
+
     </div>
   );
 }

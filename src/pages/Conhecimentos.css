@@ -1,0 +1,259 @@
+.conhecimentos-page {
+  --graphite: #111827;
+  --pastel-green: #A3E635;
+  --pastel-green-hover: #84CC16;
+  --lilac: #DDD6FE;
+  --lilac-text: #5B21B6;
+  --soft: #F8FAFC;
+ 
+  background: var(--soft);
+  color: var(--graphite);
+  min-height: 100vh;
+}
+ 
+/* Cabeçalho */
+.conhecimentos-page .cabecalho {
+  background: rgba(248, 250, 252, .95);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid var(--graphite);
+}
+.conhecimentos-page .voltar {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--graphite);
+}
+.conhecimentos-page .voltar:hover { color: #6B7280; }
+.conhecimentos-page .voltar:hover .seta { transform: translateX(-4px); }
+.conhecimentos-page .seta { transition: transform .15s; font-size: 1.25rem; }
+ 
+/* Botões */
+.conhecimentos-page .btn-brand {
+  background: var(--pastel-green);
+  color: var(--graphite);
+  font-weight: 700;
+  border: 2px solid var(--graphite);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--graphite);
+}
+.conhecimentos-page .btn-brand:hover {
+  background: var(--pastel-green-hover);
+  color: var(--graphite);
+  border-color: var(--graphite);
+}
+.conhecimentos-page .btn-line {
+  background: #fff;
+  color: var(--graphite);
+  font-weight: 700;
+  border: 2px solid var(--graphite);
+  border-radius: 10px;
+  box-shadow: 2px 2px 0 var(--graphite);
+}
+.conhecimentos-page .btn-line:hover {
+  background: var(--pastel-green);
+  color: var(--graphite);
+  border-color: var(--graphite);
+}
+.conhecimentos-page .btn-escuro {
+  background: var(--graphite);
+  color: #fff;
+  font-weight: 700;
+  border: 2px solid var(--graphite);
+  border-radius: 10px;
+  box-shadow: 3px 3px 0 var(--pastel-green);
+}
+.conhecimentos-page .btn-escuro:hover {
+  background: var(--pastel-green);
+  color: var(--graphite);
+  border-color: var(--graphite);
+}
+.conhecimentos-page .btn-cancelar {
+  background: #fff;
+  color: var(--graphite);
+  font-weight: 700;
+  border: 2px solid #E5E7EB;
+  border-radius: 12px;
+}
+.conhecimentos-page .btn-cancelar:hover { border-color: var(--graphite); }
+ 
+/* Textos de apoio */
+.conhecimentos-page .rotulo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .75rem;
+  letter-spacing: .12em;
+  color: #6B7280;
+}
+ 
+/* Filtros */
+.conhecimentos-page .chip {
+  white-space: nowrap;
+  padding: .45rem 1rem;
+  font-weight: 700;
+  font-size: .875rem;
+  border: 2px solid var(--graphite);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--graphite);
+  box-shadow: 2px 2px 0 var(--graphite);
+}
+.conhecimentos-page .chip:hover { background: rgba(163, 230, 53, .3); }
+.conhecimentos-page .chip.ativo {
+  background: var(--graphite);
+  color: #fff;
+  box-shadow: 3px 3px 0 var(--pastel-green);
+}
+ 
+/* Busca */
+.conhecimentos-page .campo-busca { min-width: 260px; }
+.conhecimentos-page .campo-busca .lupa {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .85rem;
+  pointer-events: none;
+}
+.conhecimentos-page .campo-busca .form-control {
+  padding-left: 2.25rem;
+  border: 2px solid var(--graphite);
+  border-radius: 12px;
+  box-shadow: 2px 2px 0 var(--graphite);
+}
+.conhecimentos-page .form-control,
+.conhecimentos-page .form-select {
+  border: 2px solid #E5E7EB;
+  border-radius: 12px;
+  font-size: .9rem;
+}
+.conhecimentos-page .form-control:focus,
+.conhecimentos-page .form-select:focus {
+  border-color: var(--graphite);
+  box-shadow: 0 0 0 .2rem rgba(163, 230, 53, .5);
+}
+ 
+/* Cartões */
+.conhecimentos-page .card-bt {
+  background: #fff;
+  border: 2px solid var(--graphite);
+  border-radius: 14px;
+  transition: all .2s ease-in-out;
+}
+.conhecimentos-page .card-bt:hover {
+  box-shadow: 6px 6px 0 var(--graphite);
+  transform: translateY(-2px);
+}
+.conhecimentos-page .tag-cat {
+  display: inline-block;
+  background: var(--lilac);
+  color: var(--lilac-text);
+  border: 1px solid #C4B5FD;
+  border-radius: 6px;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: .25rem .75rem;
+}
+.conhecimentos-page .nivel {
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: .15rem .6rem;
+}
+.conhecimentos-page .nivel-iniciante     { background: #065F46; color: #D1FAE5; border-color: #022C22; }
+.conhecimentos-page .nivel-intermediario { background: #92400E; color: #FEF3C7; border-color: #451A03; }
+.conhecimentos-page .nivel-avancado      { background: #881337; color: #FFE4E6; border-color: #4C0519; }
+.conhecimentos-page .nivel-padrao        { background: #1F2937; color: #fff;     border-color: var(--graphite); }
+ 
+.conhecimentos-page .divisor {
+  border: 0;
+  border-top: 2px dashed #E5E7EB;
+  opacity: 1;
+  margin: 1rem 0;
+}
+.conhecimentos-page .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--graphite);
+  background: var(--lilac);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  font-weight: 800;
+}
+.conhecimentos-page .cargo { font-size: .65rem; color: #6B7280; }
+ 
+/* Nenhum resultado */
+.conhecimentos-page .vazio {
+  background: #fff;
+  border: 2px dashed var(--graphite);
+  border-radius: 16px;
+}
+ 
+/* Rodapé */
+.conhecimentos-page .rodape {
+  background: #fff;
+  border-top: 2px solid var(--graphite);
+}
+.conhecimentos-page .logo-bt {
+  width: 20px;
+  height: 20px;
+  background: var(--pastel-green);
+  border: 1px solid var(--graphite);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .62rem;
+  font-weight: 800;
+  color: var(--graphite);
+}
+ 
+/* Pop-ups */
+.conhecimentos-page .janela {
+  border: 2px solid var(--graphite);
+  border-radius: 16px;
+  box-shadow: 8px 8px 0 var(--graphite);
+}
+.conhecimentos-page .janela-fechar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+}
+.conhecimentos-page .caixa-escolhido {
+  background: var(--soft);
+  border: 2px solid var(--graphite);
+  border-radius: 12px;
+}
+.conhecimentos-page .icone-mais {
+  width: 36px;
+  height: 36px;
+  background: var(--pastel-green);
+  border: 2px solid var(--graphite);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+ 
+/* Aviso */
+.conhecimentos-page .bolinha {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--pastel-green);
+  flex-shrink: 0;
+}
+
+/* Botão depois de solicitar a troca */
+.conhecimentos-page .btn-solicitada:disabled {
+  background: var(--pastel-green);
+  color: var(--graphite);
+  font-weight: 700;
+  border: 2px solid var(--graphite);
+  border-radius: 10px;
+  opacity: 1;
+}
