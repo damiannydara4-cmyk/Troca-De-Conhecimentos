@@ -1,0 +1,262 @@
+/* Estilos da tela de login.
+   Todas as classes usam o prefixo .log- para não mexer nas outras telas do projeto. */
+
+.log-page {
+  --graphite: #111827;
+  --pastel-green: #A3E635;
+  --pastel-green-hover: #BEF264;
+  --lilac: #DDD6FE;
+  --soft: #F8FAFC;
+
+  min-height: 100vh;
+  background: var(--soft);
+  color: var(--graphite);
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border-bottom: 2px solid var(--graphite);
+  padding: 0.9rem 2rem;
+}
+
+.log-logo {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--graphite);
+  cursor: pointer;
+}
+
+.log-seta {
+  display: inline-block;
+  font-size: 1.25rem;
+  transition: transform 0.15s;
+}
+
+.log-logo:hover .log-seta {
+  transform: translateX(-4px);
+}
+
+.log-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 1rem 4rem;
+}
+
+.log-card {
+  width: 100%;
+  max-width: 460px;
+  background: #fff;
+  border: 2px solid var(--graphite);
+  border-radius: 14px;
+  padding: 2.2rem 2rem;
+}
+
+/* Tabs superiores */
+.log-tabs {
+  display: flex;
+  border: 2px solid var(--graphite);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.log-tab {
+  flex: 1;
+  padding: 0.65rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease-in-out;
+}
+
+.log-tab-inactive {
+  background: #fff;
+  color: var(--graphite);
+}
+
+.log-tab-inactive:hover {
+  background: rgba(163, 230, 53, 0.3);
+}
+
+.log-tab-active {
+  background: var(--graphite);
+  color: #fff;
+}
+
+/* Tipografia */
+.log-heading {
+  margin-bottom: 1.6rem;
+}
+
+.log-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.3rem;
+  color: var(--graphite);
+}
+
+.log-subtitle {
+  font-size: 1rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+/* Alerta de sucesso dentro do card */
+.log-alerta-sucesso {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(163, 230, 53, 0.25);
+  border: 2px solid var(--graphite);
+  border-radius: 12px;
+  color: var(--graphite);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.log-bolinha {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--pastel-green);
+  border: 1px solid var(--graphite);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* Campos de formulário */
+.log-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+  color: var(--graphite);
+}
+
+.log-input.form-control {
+  border: 2px solid #E5E7EB;
+  border-radius: 12px;
+  color: var(--graphite);
+  font-family: inherit;
+  font-size: 0.9rem;
+  background-color: #fff;
+}
+
+.log-input::placeholder {
+  color: #9CA3AF;
+}
+
+.log-input.form-control:focus {
+  border-color: var(--graphite);
+  box-shadow: 0 0 0 0.2rem rgba(163, 230, 53, 0.5);
+  outline: none;
+}
+
+/* Botão principal (verde da marca) */
+.log-btn-submit {
+  width: 100%;
+  background: var(--pastel-green);
+  color: var(--graphite);
+  border: 2px solid var(--graphite);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--graphite);
+  padding: 0.7rem 1.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+}
+
+.log-btn-submit:hover {
+  background: var(--pastel-green-hover);
+}
+
+.log-btn-submit:focus-visible,
+.log-btn-social:focus-visible,
+.log-tab:focus-visible,
+.log-logo:focus-visible {
+  outline: 3px solid var(--graphite);
+  outline-offset: 3px;
+}
+
+/* Divisor tracejado */
+.log-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.8rem 0;
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.log-divider::before,
+.log-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 2px dashed #E5E7EB;
+}
+
+.log-divider span {
+  padding: 0 0.8rem;
+}
+
+/* Botões sociais (secundário branco com contorno) */
+.log-btn-social {
+  width: 100%;
+  background: #fff;
+  color: var(--graphite);
+  border: 2px solid var(--graphite);
+  border-radius: 12px;
+  padding: 0.55rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+}
+
+.log-btn-social:hover {
+  background: var(--lilac);
+}
+
+/* Links no rodapé do card */
+.log-links {
+  text-align: center;
+  margin-top: 1.2rem;
+  font-size: 0.9rem;
+  color: #6B7280;
+}
+
+.log-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  color: var(--graphite);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.log-link:hover {
+  color: #6B7280;
+}

@@ -11,6 +11,7 @@ import MensagemEnviada from "./pages/MensagemEnviada.jsx";
 import ConhecimentoOferecido from "./pages/ConhecimentoOferecido.jsx";
 import CadastroConta from "./pages/CadastroConta.jsx";
 import RecuperarSenha from "./pages/RecuperarSenha.jsx";
+import Login from "./pages/Login.jsx";
 
 export default function App() {
   const [telaAtual, setTelaAtual] = useState("inicio");
@@ -68,6 +69,7 @@ export default function App() {
           ["conhecimento_oferecido", "Conhecimento Oferecido"],
           ["cadastro", "Cadastro de Conta"],
           ["recuperar_senha", "Recuperação de Senha"],
+          ["login", "Login"],
         ].map(([id, nome]) => (
           <button
             key={id}
@@ -141,9 +143,7 @@ export default function App() {
             setTelaAtual("recuperar_senha")
           }
           onVoltar={handleVoltarInicio}
-          onEntrar={() =>
-            alert("Navegação para Tela de Login (exclusivamente visual)")
-          }
+          onEntrar={() => setTelaAtual("login")}
         />
       )}
 
@@ -152,9 +152,18 @@ export default function App() {
         <RecuperarSenha
           onIrParaCadastro={() => setTelaAtual("cadastro")}
           onVoltar={handleVoltarInicio}
-          onEntrar={() =>
-            alert("Navegação para Tela de Login (exclusivamente visual)")
+          onEntrar={() => setTelaAtual("login")}
+        />
+      )}
+
+      {/* Login */}
+      {telaAtual === "login" && (
+        <Login
+          onIrParaCadastro={() => setTelaAtual("cadastro")}
+          onIrParaRecuperacao={() =>
+            setTelaAtual("recuperar_senha")
           }
+          onVoltar={handleVoltarInicio}
         />
       )}
 
