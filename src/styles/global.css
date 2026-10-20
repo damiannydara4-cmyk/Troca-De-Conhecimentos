@@ -1,0 +1,454 @@
+/* =====================================================================
+   Banco de Trocas — estilos globais
+   Fonte única da identidade visual (baseada na tela Inicio).
+   Carregado uma vez em main.jsx, depois do CSS do Bootstrap.
+   ===================================================================== */
+
+/* ---------- 1. Tokens ---------- */
+:root {
+  --graphite: #111827;
+  --pastel-green: #A3E635;
+  --pastel-green-hover: #BEF264;
+  --lilac: #DDD6FE;
+  --lilac-border: #C4B5FD;
+  --soft: #F8FAFC;
+  --muted: #6B7280;
+  --line: #E5E7EB;
+
+  --radius: 12px;
+  --radius-lg: 14px;
+  --shadow-sm: 3px 3px 0 var(--graphite);
+  --shadow-lg: 6px 6px 0 var(--graphite);
+}
+
+/* ---------- 2. Base ---------- */
+body {
+  background: var(--soft);
+  color: var(--graphite);
+}
+
+/* Estrutura padrão de uma tela: topo, conteúdo que cresce, rodapé */
+.app-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.app-main { flex: 1; }
+
+section[id] { scroll-margin-top: 80px; }
+
+.brand:focus-visible,
+.nav-link-bt:focus-visible,
+.tab-bt:focus-visible,
+.link-inline:focus-visible {
+  outline: 3px solid var(--graphite);
+  outline-offset: 3px;
+}
+
+/* ---------- 3. Cabeçalho e rodapé ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  background: #fff;
+  border-bottom: 2px solid var(--graphite);
+}
+.site-header__inner {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.brand {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--graphite);
+  text-decoration: none;
+}
+.brand:hover { color: var(--graphite); }
+
+/* Links do menu (NavLink adiciona .active na rota atual) */
+.nav-link-bt {
+  font-size: .875rem;
+  font-weight: 700;
+  color: var(--graphite);
+  text-decoration: none;
+  padding: .2rem 0;
+  border-bottom: 2px solid transparent;
+}
+.nav-link-bt:hover,
+.nav-link-bt.active { color: var(--graphite); border-bottom-color: var(--pastel-green); }
+
+.site-footer {
+  background: #fff;
+  border-top: 2px solid var(--graphite);
+}
+.logo-mark {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pastel-green);
+  border: 1px solid var(--graphite);
+  border-radius: 4px;
+  font-size: .62rem;
+  font-weight: 800;
+}
+
+/* ---------- 4. Botões ----------
+   Usam as variáveis do próprio Bootstrap (.btn), assim hover/active/disabled
+   herdam o comportamento correto sem brigar por especificidade. */
+.btn-brand,
+.btn-line,
+.btn-dark-bt,
+.btn-cancel {
+  --bs-btn-border-width: 2px;
+  --bs-btn-border-radius: var(--radius);
+  --bs-btn-padding-x: 1.25rem;
+  --bs-btn-padding-y: .6rem;
+  --bs-btn-font-weight: 700;
+  font-weight: 700;
+}
+.btn-sm.btn-brand,
+.btn-sm.btn-line,
+.btn-sm.btn-dark-bt,
+.btn-sm.btn-cancel {
+  --bs-btn-padding-x: .9rem;
+  --bs-btn-padding-y: .3rem;
+}
+
+/* Principal (verde) */
+.btn-brand {
+  --bs-btn-color: var(--graphite);
+  --bs-btn-bg: var(--pastel-green);
+  --bs-btn-border-color: var(--graphite);
+  --bs-btn-hover-color: var(--graphite);
+  --bs-btn-hover-bg: var(--pastel-green-hover);
+  --bs-btn-hover-border-color: var(--graphite);
+  --bs-btn-active-color: var(--graphite);
+  --bs-btn-active-bg: var(--pastel-green-hover);
+  --bs-btn-active-border-color: var(--graphite);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Secundário (branco com contorno) */
+.btn-line {
+  --bs-btn-color: var(--graphite);
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: var(--graphite);
+  --bs-btn-hover-color: var(--graphite);
+  --bs-btn-hover-bg: var(--lilac);
+  --bs-btn-hover-border-color: var(--graphite);
+  --bs-btn-active-color: var(--graphite);
+  --bs-btn-active-bg: var(--lilac);
+  --bs-btn-active-border-color: var(--graphite);
+}
+
+/* Destaque escuro (ação de topo, ex.: "+ Oferecer conhecimento") */
+.btn-dark-bt {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--graphite);
+  --bs-btn-border-color: var(--graphite);
+  --bs-btn-hover-color: var(--graphite);
+  --bs-btn-hover-bg: var(--pastel-green);
+  --bs-btn-hover-border-color: var(--graphite);
+  --bs-btn-active-color: var(--graphite);
+  --bs-btn-active-bg: var(--pastel-green);
+  --bs-btn-active-border-color: var(--graphite);
+  box-shadow: 3px 3px 0 var(--pastel-green);
+}
+
+/* Cancelar (discreto) */
+.btn-cancel {
+  --bs-btn-color: var(--graphite);
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: var(--line);
+  --bs-btn-hover-color: var(--graphite);
+  --bs-btn-hover-bg: #fff;
+  --bs-btn-hover-border-color: var(--graphite);
+  --bs-btn-active-color: var(--graphite);
+  --bs-btn-active-bg: #fff;
+  --bs-btn-active-border-color: var(--graphite);
+}
+
+/* Estado concluído (ex.: "✓ Troca solicitada") */
+.btn-done:disabled,
+.btn-done.disabled {
+  background: var(--pastel-green);
+  color: var(--graphite);
+  border-color: var(--graphite);
+  opacity: 1;
+}
+
+.btn-brand:focus-visible,
+.btn-dark-bt:focus-visible {
+  box-shadow: var(--shadow-sm), 0 0 0 .25rem rgba(163, 230, 53, .5);
+}
+.btn-line:focus-visible,
+.btn-cancel:focus-visible {
+  box-shadow: 0 0 0 .25rem rgba(163, 230, 53, .5);
+}
+
+/* ---------- 5. Formulários ---------- */
+.form-label {
+  font-size: .875rem;
+  font-weight: 700;
+  margin-bottom: .35rem;
+}
+.form-control,
+.form-select {
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--graphite);
+  font-size: .9rem;
+  background-color: #fff;
+}
+.form-control::placeholder { color: #9CA3AF; }
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--graphite);
+  box-shadow: 0 0 0 .2rem rgba(163, 230, 53, .5);
+}
+
+/* Campo de busca com ícone */
+.search-field { position: relative; min-width: 260px; }
+.search-field__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .85rem;
+  pointer-events: none;
+}
+.search-field .form-control { padding-left: 2.25rem; }
+
+/* ---------- 6. Cartões, tags e blocos ---------- */
+.card-bt {
+  background: #fff;
+  border: 2px solid var(--graphite);
+  border-radius: var(--radius-lg);
+}
+.card-bt--hover { transition: transform .2s ease, box-shadow .2s ease; }
+.card-bt--hover:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+.band {
+  background: #fff;
+  border-top: 2px solid var(--graphite);
+  border-bottom: 2px solid var(--graphite);
+}
+
+.tag {
+  display: inline-block;
+  background: var(--lilac);
+  font-size: .75rem;
+  font-weight: 700;
+  padding: .35rem .75rem;
+  border-radius: 999px;
+}
+
+/* Selo de nível (cores semânticas em tons pastel, texto sempre grafite) */
+.nivel {
+  display: inline-block;
+  border: 1px solid var(--graphite);
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: .2rem .7rem;
+  background: #fff;
+}
+.nivel-iniciante     { background: #ECFCCB; }
+.nivel-intermediario { background: #FEF3C7; }
+.nivel-avancado      { background: #FFE4E6; }
+
+/* Filtro de categoria */
+.chip {
+  white-space: nowrap;
+  background: #fff;
+  color: var(--graphite);
+  border: 2px solid var(--graphite);
+  border-radius: 999px;
+  font-size: .875rem;
+  font-weight: 700;
+  padding: .3rem 1rem;
+}
+.chip:hover { background: rgba(221, 214, 254, .5); }
+.chip.active { background: var(--lilac); }
+
+.icon-box,
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+}
+.icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--lilac);
+  font-size: 1.5rem;
+}
+.step-num {
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--graphite);
+  border-radius: var(--radius);
+  background: var(--pastel-green);
+  font-weight: 800;
+}
+.avatar {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--graphite);
+  border-radius: 50%;
+  background: var(--lilac);
+  font-size: .7rem;
+  font-weight: 800;
+}
+
+.divider-dashed {
+  border: 0;
+  border-top: 2px dashed var(--line);
+  opacity: 1;
+  margin: 1rem 0;
+}
+.empty-state {
+  background: #fff;
+  border: 2px dashed var(--graphite);
+  border-radius: 16px;
+}
+.eyebrow {
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.img-framed {
+  background: #fff;
+  border: 2px solid var(--graphite);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ---------- 7. Telas de autenticação (Login, Cadastro, Recuperar) ---------- */
+.auth-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 1rem 4rem;
+}
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: #fff;
+  border: 2px solid var(--graphite);
+  border-radius: var(--radius-lg);
+  padding: 2.2rem 2rem;
+}
+.auth-title { font-size: 2rem; font-weight: 800; margin: 0 0 .3rem; }
+.auth-subtitle { color: var(--muted); margin: 0 0 1.6rem; }
+
+.tabs-bt {
+  display: flex;
+  border: 2px solid var(--graphite);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.tab-bt {
+  flex: 1;
+  padding: .65rem .5rem;
+  border: 0;
+  background: #fff;
+  color: var(--graphite);
+  font-size: .95rem;
+  font-weight: 700;
+  text-align: center;
+  transition: background .15s ease;
+}
+.tab-bt:hover { background: rgba(163, 230, 53, .3); }
+.tab-bt.active { background: var(--graphite); color: #fff; cursor: default; }
+
+.divider-text {
+  display: flex;
+  align-items: center;
+  margin: 1.8rem 0;
+  color: var(--muted);
+  font-size: .875rem;
+}
+.divider-text::before,
+.divider-text::after { content: ""; flex: 1; border-top: 2px dashed var(--line); }
+.divider-text span { padding: 0 .8rem; }
+
+.alert-ok {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  background: rgba(163, 230, 53, .25);
+  border: 2px solid var(--graphite);
+  border-radius: var(--radius);
+  font-size: .9rem;
+  font-weight: 700;
+  padding: .7rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.link-inline {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--graphite);
+  text-decoration: underline;
+}
+.link-inline:hover { color: var(--muted); }
+
+/* ---------- 8. Telas de confirmação (Mensagem enviada, Conhecimento oferecido) ---------- */
+.status-main {
+  display: grid;
+  place-items: center;
+  padding: 3rem 1rem 4rem;
+}
+.status-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 2px solid var(--graphite);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 3rem 2.5rem;
+  text-align: center;
+}
+.status-card__icon { display: block; margin: 0 auto 1.8rem; }
+.status-card h1 { font-size: 1.9rem; font-weight: 800; margin-bottom: 1rem; }
+.status-card p { color: var(--muted); line-height: 1.7; margin-bottom: 1.6rem; }
+
+/* ---------- 9. Pop-ups e avisos ---------- */
+.modal-content {
+  border: 2px solid var(--graphite);
+  border-radius: 16px;
+  box-shadow: 8px 8px 0 var(--graphite);
+}
+.modal-close-abs { position: absolute; top: 16px; right: 16px; z-index: 2; }
+.dot-ok {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--pastel-green);
+}
+
+/* ---------- 10. Acessibilidade ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
