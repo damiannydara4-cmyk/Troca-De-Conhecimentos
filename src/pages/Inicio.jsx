@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./Inicio.css";
+import React from "react";
+import { Link } from "react-router-dom";
 import previaPlataforma from "../assets/previaWeb.png";
+import { ROTAS } from "../routes.js";
 
-//  Dados da tela (listas usadas com .map)
+// Dados da tela (listas usadas com .map)
 const STATS = [
   { v: "12.400+", l: "Criadores de conteúdo" },
   { v: "85.000+", l: "Artigos e tutoriais" },
@@ -32,32 +32,9 @@ const DEPOIMENTOS = [
   { q: "A busca semântica é incrível. Acho exatamente o que preciso, sempre.", n: "Camila Rocha", c: "Idiomas" },
 ];
 
-// Tela 
-//   onFalarComEquipe -> chamada ao clicar em "Falar com a equipe" (o App troca para a tela de contato)
-export default function Inicio({ onIrParaConhecimentos, onOferecerConhecimento, onFalarComEquipe }) {
-  // Estado do modal: null = fechado | "login" | "register"
-  const [modal, setModal] = useState(null);
-
+export default function Inicio() {
   return (
-    <div className="home-page">
-      {/* Cabeçalho */}
-      <nav className="navbar sticky-top">
-        <div className="container">
-          <span className="navbar-brand fw-bolder">Banco de Trocas</span>
-
-          <div className="d-flex align-items-center gap-3 fw-bold small">
-            <a href="#" className="text-decoration-none text-reset">Início</a>
-            <a href="#conhecimentos" className="text-decoration-none text-reset" onClick={(e) => {
-               e.preventDefault();
-                onIrParaConhecimentos && onIrParaConhecimentos();
-                }}>Conhecimentos</a>
-            <button className="btn btn-line btn-sm" onClick={() => setModal("login")}>
-              Entrar
-            </button>
-          </div>
-        </div>
-      </nav>
-
+    <>
       {/* Hero */}
       <section className="container py-5 my-4">
         <div className="row align-items-center g-5">
@@ -70,16 +47,18 @@ export default function Inicio({ onIrParaConhecimentos, onOferecerConhecimento, 
               Publique artigos, tutoriais e guias, e descubra conhecimentos de outras pessoas.
             </p>
             <div className="d-flex flex-wrap gap-3 mt-4">
-            <button className="btn btn-brand" onClick={onIrParaConhecimentos}>Explorar conhecimentos</button>
-            <button className="btn btn-line" onClick={onOferecerConhecimento}>Oferecer conhecimentos</button>
+              <Link to={ROTAS.conhecimentos} className="btn btn-brand">Explorar conhecimentos</Link>
+              <Link to={ROTAS.conhecimentos} state={{ abrirOferta: true }} className="btn btn-line">
+                Oferecer conhecimentos
+              </Link>
             </div>
           </div>
           <div className="col-lg-6">
             <img
               src={previaPlataforma}
               alt="Prévia da tela de Conhecimentos do Banco de Trocas"
-              className="img-fluid w-100 previa-img"
-           />
+              className="img-fluid w-100 img-framed"
+            />
           </div>
         </div>
       </section>
@@ -105,7 +84,7 @@ export default function Inicio({ onIrParaConhecimentos, onOferecerConhecimento, 
           {FUNC.map((f) => (
             <div key={f.t} className="col-12 col-sm-6 col-lg-4">
               <article className="card-bt h-100 p-4">
-                <span className="icon-box d-inline-flex align-items-center justify-content-center">{f.i}</span>
+                <span className="icon-box">{f.i}</span>
                 <h3 className="h6 fw-bold mt-3">{f.t}</h3>
                 <p className="small text-secondary mb-0">{f.d}</p>
               </article>
@@ -121,7 +100,7 @@ export default function Inicio({ onIrParaConhecimentos, onOferecerConhecimento, 
           <div className="row g-4 mt-3 text-center">
             {PASSOS.map((p, i) => (
               <div key={p.t} className="col-md-4">
-                <span className="step-num d-inline-flex align-items-center justify-content-center">{i + 1}</span>
+                <span className="step-num">{i + 1}</span>
                 <h3 className="h6 fw-bold mt-3">{p.t}</h3>
                 <p className="small text-secondary mb-0">{p.d}</p>
               </div>
@@ -156,77 +135,11 @@ export default function Inicio({ onIrParaConhecimentos, onOferecerConhecimento, 
             Crie sua conta em poucos minutos e publique seu primeiro conteúdo hoje.
           </p>
           <div className="d-flex flex-wrap justify-content-center gap-3 mt-4">
-            <button className="btn btn-brand" onClick={() => setModal("register")}>
-              Criar conta gratuita
-            </button>
-            {/* Leva para a tela de contato (controlada pelo App.jsx) */}
-            <button className="btn btn-line" onClick={onFalarComEquipe}>
-              Falar com a equipe
-            </button>
+            <Link to={ROTAS.cadastro} className="btn btn-brand">Criar conta gratuita</Link>
+            <Link to={ROTAS.contato} className="btn btn-line">Falar com a equipe</Link>
           </div>
         </div>
       </section>
-
-      {/* Rodapé */}
-      <footer className="bg-white" style={{ borderTop: "2px solid #111827" }}>
-        <div className="container py-5">
-          <div className="row g-4">
-            <div className="col-md-3">
-              <p className="fw-bolder">Banco de Trocas</p>
-              <p className="small text-secondary">Uma plataforma para compartilhar e descobrir conhecimento.</p>
-            </div>
-            <div className="col-6 col-md-3">
-              <p className="small fw-bold">Produto</p>
-              <p className="small text-secondary mb-1">Funcionalidades</p>
-              <p className="small text-secondary mb-1">Conhecimentos</p>
-            </div>
-            <div className="col-6 col-md-3">
-              <p className="small fw-bold">Comunidade</p>
-              <p className="small text-secondary mb-1">Criadores</p>
-              <p className="small text-secondary mb-1">Eventos</p>
-            </div>
-            <div className="col-6 col-md-3">
-              <p className="small fw-bold">Empresa</p>
-              <p className="small text-secondary mb-1">Sobre nós</p>
-              <p className="small text-secondary mb-1">Contato</p>
-            </div>
-          </div>
-          <p className="small text-secondary border-top pt-3 mt-4 mb-0">
-            © 2026 Banco de Trocas. Todos os direitos reservados.
-          </p>
-        </div>
-      </footer>
-
-      {/* Modal de login / cadastro */}
-      {modal && (
-        <>
-          <div className="modal-backdrop show"></div>
-
-          <div className="modal d-block" onClick={() => setModal(null)}>
-            <div
-              className="modal-dialog modal-dialog-centered modal-sm"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-content" style={{ border: "2px solid #111827", borderRadius: 16 }}>
-                <div className="modal-header border-0 pb-0">
-                  <h5 className="modal-title fw-bolder">
-                    {modal === "login" ? "Entrar" : "Criar conta gratuita"}
-                  </h5>
-                  <button className="btn-close" onClick={() => setModal(null)}></button>
-                </div>
-
-                <div className="modal-body">
-                  <label className="form-label small fw-bold">E-mail</label>
-                  <input type="email" className="form-control mb-3" placeholder="voce@email.com" />
-                  <button className="btn btn-brand w-100" onClick={() => setModal(null)}>
-                    {modal === "login" ? "Entrar" : "Cadastrar"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+    </>
   );
 }

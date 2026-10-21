@@ -58,7 +58,10 @@ section[id] { scroll-margin-top: 80px; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: .5rem 1rem;
+  padding-top: .5rem;
+  padding-bottom: .5rem;
 }
 .brand {
   background: none;
@@ -87,6 +90,14 @@ section[id] { scroll-margin-top: 80px; }
   background: #fff;
   border-top: 2px solid var(--graphite);
 }
+.footer-link {
+  font-size: .875rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+.footer-link:hover { color: var(--graphite); text-decoration: underline; }
+.footer-copy { border-top: 2px dashed var(--line); }
+
 .logo-mark {
   width: 20px;
   height: 20px;
@@ -177,6 +188,11 @@ section[id] { scroll-margin-top: 80px; }
 }
 
 /* Estado concluído (ex.: "✓ Troca solicitada") */
+.btn-done {
+  --bs-btn-border-width: 2px;
+  --bs-btn-border-radius: var(--radius);
+  font-weight: 700;
+}
 .btn-done:disabled,
 .btn-done.disabled {
   background: var(--pastel-green);
@@ -184,7 +200,6 @@ section[id] { scroll-margin-top: 80px; }
   border-color: var(--graphite);
   opacity: 1;
 }
-
 .btn-brand:focus-visible,
 .btn-dark-bt:focus-visible {
   box-shadow: var(--shadow-sm), 0 0 0 .25rem rgba(163, 230, 53, .5);
@@ -365,7 +380,9 @@ section[id] { scroll-margin-top: 80px; }
   margin-bottom: 2rem;
 }
 .tab-bt {
+  display: block;
   flex: 1;
+  text-decoration: none;
   padding: .65rem .5rem;
   border: 0;
   background: #fff;
@@ -375,8 +392,9 @@ section[id] { scroll-margin-top: 80px; }
   text-align: center;
   transition: background .15s ease;
 }
-.tab-bt:hover { background: rgba(163, 230, 53, .3); }
-.tab-bt.active { background: var(--graphite); color: #fff; cursor: default; }
+.tab-bt:hover { background: rgba(163, 230, 53, .3); color: var(--graphite); }
+.tab-bt.active,
+.tab-bt.active:hover { background: var(--graphite); color: #fff; cursor: default; }
 
 .divider-text {
   display: flex;
