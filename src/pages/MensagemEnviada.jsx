@@ -13,8 +13,8 @@ export default function MensagemEnviada() {
       <section className="status-card" role="status">
         {/* Envelope em lilás */}
         <svg className="status-card__icon" width="52" height="38" viewBox="0 0 52 38" aria-hidden="true">
-          <rect x="1" y="1" width="50" height="36" rx="4" fill="#DDD6FE" />
-          <path d="M3 5 26 22 49 5" fill="none" stroke="#C4B5FD" strokeWidth="2"
+          <rect x="1" y="1" width="50" height="36" rx="4" fill="#9bfab0" />
+          <path d="M3 5 26 22 49 5" fill="none" stroke="#2f2c79" strokeWidth="2"
             strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <h1>Mensagem enviada!</h1>
