@@ -1,8 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ROTAS } from "../routes.js";
+import { useAuth } from "../contexts/AuthContext.jsx";
 
 export default function Footer() {
+  const { autenticado } = useAuth();
+
   return (
     <footer className="site-footer py-4">
       <div className="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
@@ -18,7 +21,7 @@ export default function Footer() {
           <Link to={ROTAS.inicio} className="footer-link">Início</Link>
           <Link to={ROTAS.conhecimentos} className="footer-link">Conhecimentos</Link>
           <Link to={ROTAS.contato} className="footer-link">Fale com a equipe</Link>
-          <Link to={ROTAS.login} className="footer-link">Entrar</Link>
+          {!autenticado && <Link to={ROTAS.login} className="footer-link">Entrar</Link>}
         </nav>
       </div>
 

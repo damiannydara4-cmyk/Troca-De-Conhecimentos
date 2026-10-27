@@ -470,3 +470,18 @@ section[id] { scroll-margin-top: 80px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+
+/*Ela aparece quando o login ou o cadastro falham.*/
+.alert-erro {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  background: rgba(239, 68, 68, .15);
+  border: 2px solid var(--graphite);
+  border-radius: var(--radius);
+  font-size: .9rem;
+  font-weight: 700;
+  padding: .7rem 1rem;
+  margin-bottom: 1.5rem;
+}

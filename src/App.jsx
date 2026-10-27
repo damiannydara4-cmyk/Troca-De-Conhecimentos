@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Layout from "./components/Layout.jsx";
+import RotaProtegida from "./components/RotaProtegida.jsx";
 import Inicio from "./pages/Inicio.jsx";
 import Conhecimentos from "./pages/Conhecimentos.jsx";
 import ConhecimentoOferecido from "./pages/ConhecimentoOferecido.jsx";
@@ -18,14 +19,19 @@ export default function App() {
     <Routes>
       {/* Moldura global com Header e Footer para todas as telas */}
       <Route element={<Layout />}>
+        {/* Públicas */}
         <Route path={ROTAS.inicio} element={<Inicio />} />
-        <Route path={ROTAS.conhecimentos} element={<Conhecimentos />} />
-        <Route path={ROTAS.conhecimentoOferecido} element={<ConhecimentoOferecido />} />
         <Route path={ROTAS.contato} element={<FaleComEquipe />} />
         <Route path={ROTAS.mensagemEnviada} element={<MensagemEnviada />} />
         <Route path={ROTAS.login} element={<Login />} />
         <Route path={ROTAS.cadastro} element={<CadastroConta />} />
         <Route path={ROTAS.recuperarSenha} element={<RecuperarSenha />} />
+
+        {/* Exigem login: para proteger outra tela, mova a <Route> para dentro deste bloco */}
+        <Route element={<RotaProtegida />}>
+          <Route path={ROTAS.conhecimentos} element={<Conhecimentos />} />
+          <Route path={ROTAS.conhecimentoOferecido} element={<ConhecimentoOferecido />} />
+        </Route>
 
         {/* Endereço inexistente volta para o início */}
         <Route path="*" element={<Navigate to={ROTAS.inicio} replace />} />

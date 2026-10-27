@@ -22,6 +22,12 @@ export default function FaleComEquipe() {
 
   const set = (campo) => (e) => setForm((f) => ({ ...f, [campo]: e.target.value }));
 
+  // Volta para a tela anterior; se a página foi aberta direto pela URL (sem histórico), vai para o início
+  const cancelar = () => {
+    if (window.history.state?.idx > 0) navigate(-1);
+    else navigate(ROTAS.inicio);
+  };
+
   const enviar = (e) => {
     e.preventDefault();
     navigate(ROTAS.mensagemEnviada, { state: { email: form.email } });
@@ -32,7 +38,6 @@ export default function FaleComEquipe() {
       <div className="row g-5">
         {/* Coluna esquerda */}
         <section className="col-lg-5">
-          <p className="eyebrow mb-2">Falar com a equipe</p>
           <h1 className="display-6 fw-bolder">Fale com a gente</h1>
           <p className="text-secondary mb-4">
             Tem alguma dúvida, sugestão ou quer saber mais sobre o Banco de Trocas?
@@ -96,9 +101,7 @@ export default function FaleComEquipe() {
             </div>
 
             <div className="d-flex gap-3">
-              <button type="button" className="btn btn-cancel" onClick={() => setForm(VAZIO)}>
-                Cancelar
-              </button>
+              <button type="button" className="btn btn-cancel" onClick={cancelar}>Cancelar</button>
               <button type="submit" className="btn btn-brand flex-grow-1">Enviar mensagem</button>
             </div>
           </form>
