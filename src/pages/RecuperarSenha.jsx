@@ -2,20 +2,34 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Campo from "../components/Campo.jsx";
 import { ROTAS } from "../routes.js";
+import { authService } from "../services/authService.js";
+import { validarEmail } from "../utils/validacoes.js";
 
 export default function RecuperarSenha() {
-  const [form, setForm] = useState({ email: "", codigo: "", novaSenha: "", confirmarNovaSenha: "" });
+  const [email, setEmail] = useState("");
+  const [erroEmail, setErroEmail] = useState(null);
+  const [erro, setErro] = useState(null);
   const [enviado, setEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
 
-  const set = (campo) => (e) => setForm((f) => ({ ...f, [campo]: e.target.value }));
-
-  const senhasDiferentes =
-    form.confirmarNovaSenha !== "" && form.novaSenha !== form.confirmarNovaSenha;
-
-  const redefinir = (e) => {
+  const redefinir = async (e) => {
     e.preventDefault();
-    if (senhasDiferentes) return;
-    setEnviado(true);
+    setErro(null);
+    setEnviado(false);
+
+    const problema = validarEmail(email);
+    setErroEmail(problema);
+    if (problema) return;
+
+    setEnviando(true);
+    try {
+      await authService.recuperarSenha(email.trim());
+      setEnviado(true);
+    } catch (err) {
+      setErro(err.message || "Não foi possível enviar o e-mail.");
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -27,26 +41,23 @@ export default function RecuperarSenha() {
         </div>
 
         <h1 className="auth-title">Recupere sua senha</h1>
-        <p className="auth-subtitle">Preencha as informações para redefinir seu acesso</p>
+        <p className="auth-subtitle">Informe seu e-mail e enviaremos um link para criar uma nova senha</p>
 
         {enviado && (
           <div className="alert-ok" role="status">
-            ✓ Instruções enviadas para {form.email}! Verifique sua caixa de entrada.
+            ✓ Se existir uma conta com {email.trim()}, enviamos um link para redefinir a senha.
+            Verifique sua caixa de entrada e o spam.
           </div>
         )}
+        {erro && <div className="alert-erro" role="alert">{erro}</div>}
 
-        <form onSubmit={redefinir}>
+        <form onSubmit={redefinir} noValidate>
           <Campo id="rec-email" label="E-mail cadastrado" type="email" placeholder="seu@email.com"
-            required value={form.email} onChange={set("email")} />
-          <Campo id="rec-codigo" label="Código de verificação" dica="(se já recebeu por e-mail)"
-            placeholder="Ex: 123456" value={form.codigo} onChange={set("codigo")} />
-          <Campo id="rec-nova" label="Nova senha" type="password" placeholder="••••••••"
-            required value={form.novaSenha} onChange={set("novaSenha")} />
-          <Campo id="rec-confirmar" label="Confirmar nova senha" type="password" placeholder="••••••••"
-            required value={form.confirmarNovaSenha} onChange={set("confirmarNovaSenha")}
-            erro={senhasDiferentes ? "As senhas não coincidem." : null} />
+            autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} erro={erroEmail} />
 
-          <button type="submit" className="btn btn-brand w-100 mt-2">Redefinir senha</button>
+          <button type="submit" className="btn btn-brand w-100 mt-2" disabled={enviando}>
+            {enviando ? "Enviando…" : "Enviar link de redefinição"}
+          </button>
         </form>
 
         <div className="text-center small text-secondary mt-4">

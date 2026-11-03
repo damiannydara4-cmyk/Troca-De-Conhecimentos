@@ -4,6 +4,8 @@ import Campo from "../components/Campo.jsx";
 import BotoesSociais from "../components/BotoesSociais.jsx";
 import { ROTAS } from "../routes.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { authService } from "../services/authService.js";
+import { validarEmail } from "../utils/validacoes.js";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,7 +13,10 @@ export default function Login() {
   const { entrar, autenticado, carregando } = useAuth();
 
   const [form, setForm] = useState({ email: "", senha: "" });
+  const [erros, setErros] = useState({});
   const [erro, setErro] = useState(null);
+  const [aviso, setAviso] = useState(null);
+  const [precisaVerificar, setPrecisaVerificar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
   const set = (campo) => (e) => setForm((f) => ({ ...f, [campo]: e.target.value }));
@@ -25,12 +30,37 @@ export default function Login() {
   const handleEntrar = async (e) => {
     e.preventDefault();
     setErro(null);
+    setAviso(null);
+    setPrecisaVerificar(false);
+
+    const novosErros = {};
+    const erroEmail = validarEmail(form.email);
+    if (erroEmail) novosErros.email = erroEmail;
+    if (!form.senha) novosErros.senha = "Informe sua senha.";
+    setErros(novosErros);
+    if (Object.keys(novosErros).length > 0) return;
+
     setEnviando(true);
     try {
       await entrar(form.email.trim(), form.senha);
       navigate(destino, { replace: true });
     } catch (err) {
       setErro(err.message || "Não foi possível entrar.");
+      setPrecisaVerificar(err.codigo === "email-nao-verificado");
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const reenviarVerificacao = async () => {
+    setErro(null);
+    setEnviando(true);
+    try {
+      await authService.reenviarVerificacao(form.email.trim(), form.senha);
+      setPrecisaVerificar(false);
+      setAviso("Enviamos um novo e-mail de verificação. Confira sua caixa de entrada e o spam.");
+    } catch (err) {
+      setErro(err.message || "Não foi possível reenviar o e-mail.");
     } finally {
       setEnviando(false);
     }
@@ -48,18 +78,26 @@ export default function Login() {
         <p className="auth-subtitle">Entre com suas informações para continuar</p>
 
         {state?.cadastrado && (
-          <div className="alert-ok" role="status">✓ Conta criada! Entre para continuar.</div>
+          <div className="alert-ok" role="status">
+            ✓ Conta criada! Enviamos um e-mail para você confirmar o endereço. Depois de confirmar, é só entrar.
+          </div>
         )}
         {state?.from && !state?.cadastrado && (
           <div className="alert-ok" role="status">Entre para acessar esta página.</div>
         )}
+        {aviso && <div className="alert-ok" role="status">{aviso}</div>}
         {erro && <div className="alert-erro" role="alert">{erro}</div>}
+        {precisaVerificar && (
+          <button type="button" className="btn btn-line w-100 mb-3" onClick={reenviarVerificacao} disabled={enviando}>
+            Reenviar e-mail de verificação
+          </button>
+        )}
 
-        <form onSubmit={handleEntrar}>
+        <form onSubmit={handleEntrar} noValidate>
           <Campo id="login-email" label="E-mail" type="email" placeholder="seu@email.com"
-            required autoComplete="email" value={form.email} onChange={set("email")} />
+            autoComplete="email" value={form.email} onChange={set("email")} erro={erros.email} />
           <Campo id="login-senha" label="Senha" type="password" placeholder="••••••••"
-            required autoComplete="current-password" value={form.senha} onChange={set("senha")} />
+            autoComplete="current-password" value={form.senha} onChange={set("senha")} erro={erros.senha} />
 
           <button type="submit" className="btn btn-brand w-100 mt-2" disabled={enviando}>
             {enviando ? "Entrando…" : "Entrar"}

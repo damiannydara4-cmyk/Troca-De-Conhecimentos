@@ -4,10 +4,12 @@ import Campo from "../components/Campo.jsx";
 import BotoesSociais from "../components/BotoesSociais.jsx";
 import { ROTAS } from "../routes.js";
 import { authService } from "../services/authService.js";
+import { validarCadastro } from "../utils/validacoes.js";
 
 export default function CadastroConta() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ nome: "", email: "", senha: "", confirmarSenha: "" });
+  const [erros, setErros] = useState({});
   const [erro, setErro] = useState(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -17,8 +19,12 @@ export default function CadastroConta() {
 
   const cadastrar = async (e) => {
     e.preventDefault();
-    if (senhasDiferentes) return;
     setErro(null);
+
+    const novosErros = validarCadastro(form);
+    setErros(novosErros);
+    if (Object.keys(novosErros).length > 0) return;
+
     setEnviando(true);
     try {
       await authService.cadastrar({
@@ -47,16 +53,17 @@ export default function CadastroConta() {
 
         {erro && <div className="alert-erro" role="alert">{erro}</div>}
 
-        <form onSubmit={cadastrar}>
+        <form onSubmit={cadastrar} noValidate>
           <Campo id="cad-nome" label="Nome completo" placeholder="Seu nome"
-            required autoComplete="name" value={form.nome} onChange={set("nome")} />
+            autoComplete="name" value={form.nome} onChange={set("nome")} erro={erros.nome} />
           <Campo id="cad-email" label="E-mail" type="email" placeholder="seu@email.com"
-            required autoComplete="email" value={form.email} onChange={set("email")} />
-          <Campo id="cad-senha" label="Senha" type="password" placeholder="••••••••"
-            required autoComplete="new-password" value={form.senha} onChange={set("senha")} />
+            autoComplete="email" value={form.email} onChange={set("email")} erro={erros.email} />
+          <Campo id="cad-senha" label="Senha" dica="(mínimo 8 caracteres, com letras e números)"
+            type="password" placeholder="••••••••"
+            autoComplete="new-password" value={form.senha} onChange={set("senha")} erro={erros.senha} />
           <Campo id="cad-confirmar" label="Confirmar senha" type="password" placeholder="••••••••"
-            required autoComplete="new-password" value={form.confirmarSenha} onChange={set("confirmarSenha")}
-            erro={senhasDiferentes ? "As senhas não coincidem." : null} />
+            autoComplete="new-password" value={form.confirmarSenha} onChange={set("confirmarSenha")}
+            erro={erros.confirmarSenha || (senhasDiferentes ? "As senhas não coincidem." : null)} />
 
           <button type="submit" className="btn btn-brand w-100 mt-2" disabled={enviando}>
             {enviando ? "Criando conta…" : "Criar conta"}

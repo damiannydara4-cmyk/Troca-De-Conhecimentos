@@ -8,6 +8,7 @@ import { AuthProvider } from './contexts/AuthContext.jsx'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './styles/global.css'
 
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
