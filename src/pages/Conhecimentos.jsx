@@ -1,78 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ROTAS } from "../routes.js";
+import { useAuth } from "../contexts/AuthContext.jsx";
+import {
+  criarConhecimento,
+  listarCategorias,
+  listarConhecimentos,
+} from "../services/conhecimentoService.js";
 
-const CONHECIMENTOS_INICIAIS = [
-  {
-    id: 1,
-    titulo: "Introdução ao Python",
-    categoria: "Tecnologia",
-    nivel: "Iniciante",
-    descricao: "Aprenda os fundamentos de Python do zero, com exemplos práticos e exercícios.",
-    autor: "Carla Mendes",
-    cargo: "Engenheira de Software",
-  },
-  {
-    id: 2,
-    titulo: "Design de interfaces acessíveis",
-    categoria: "Design",
-    nivel: "Intermediário",
-    descricao: "Princípios de acessibilidade aplicados ao design de produtos digitais.",
-    autor: "Rafael Souza",
-    cargo: "Product Designer",
-  },
-  {
-    id: 3,
-    titulo: "Finanças pessoais para autônomos",
-    categoria: "Finanças",
-    nivel: "Iniciante",
-    descricao: "Como organizar renda variável, impostos e reserva de emergência.",
-    autor: "Ana Beatriz",
-    cargo: "Consultora Financeira",
-  },
-  {
-    id: 4,
-    titulo: "Fotografia urbana com celular",
-    categoria: "Fotografia",
-    nivel: "Iniciante",
-    descricao: "Técnicas de composição e luz para fazer boas fotos com smartphone.",
-    autor: "Lucas Ferreira",
-    cargo: "Fotógrafo Profissional",
-  },
-  {
-    id: 5,
-    titulo: "Machine Learning na prática",
-    categoria: "Tecnologia",
-    nivel: "Avançado",
-    descricao: "Modelos supervisionados e não supervisionados com Python e scikit-learn.",
-    autor: "Priya Sharma",
-    cargo: "Cientista de Dados",
-  },
-  {
-    id: 6,
-    titulo: "Culinária vegetariana",
-    categoria: "Gastronomia",
-    nivel: "Iniciante",
-    descricao: "Receitas nutritivas e saborosas sem proteína animal, do básico ao elaborado.",
-    autor: "Joana Castro",
-    cargo: "Chef de Cozinha",
-  },
-];
-
-const CATEGORIAS = ["Todos", "Tecnologia", "Design", "Finanças", "Fotografia", "Gastronomia", "Saúde","Outros"];
 const NIVEIS = ["Iniciante", "Intermediário", "Avançado"];
 
 const FORMULARIO_VAZIO = {
   titulo: "",
-  categoria: "Tecnologia",
+  categoriaId: "",
   nivel: "Iniciante",
   descricao: "",
-  autor: "",
   cargo: "",
 };
 
-// Enquanto não existe back-end, a lista fica salva no navegador (localStorage)
-const CHAVE_LISTA = "banco-de-trocas:conhecimentos";
+// As solicitações de troca ainda ficam no navegador (viram coleção "exchanges" numa próxima etapa)
 const CHAVE_SOLICITADAS = "banco-de-trocas:solicitadas";
 
 const lerSalvo = (chave, padrao) => {
@@ -88,7 +34,7 @@ const salvar = (chave, valor) => {
   try {
     localStorage.setItem(chave, JSON.stringify(valor));
   } catch {
-    /* sem armazenamento disponível: a lista vale só até recarregar a página */
+    /* sem armazenamento disponível: vale só até recarregar a página */
   }
 };
 
@@ -124,8 +70,15 @@ function Janela({ onFechar, children }) {
 export default function Conhecimentos() {
   const navigate = useNavigate();
   const location = useLocation(); // location.state.abrirOferta vem do botão "Oferecer conhecimentos" da Início
+  const { usuario } = useAuth();
 
-  const [lista, setLista] = useState(() => lerSalvo(CHAVE_LISTA, CONHECIMENTOS_INICIAIS));
+  const [categorias, setCategorias] = useState([]); // [{ id, nome }] vindas do Firestore
+  const [lista, setLista] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erroCarga, setErroCarga] = useState(null);
+  const [tentativa, setTentativa] = useState(0); // aumenta para "tentar de novo"
+  const [enviando, setEnviando] = useState(false);
+
   // Ids dos conhecimentos que já tiveram troca solicitada
   const [solicitadas, setSolicitadas] = useState(() => lerSalvo(CHAVE_SOLICITADAS, []));
 
@@ -138,6 +91,31 @@ export default function Conhecimentos() {
   const [aviso, setAviso] = useState(null);
   const [novo, setNovo] = useState(FORMULARIO_VAZIO);
 
+  // Carrega categorias e conhecimentos do Firestore ao abrir a tela
+  useEffect(() => {
+    let ativo = true;
+    setCarregando(true);
+    setErroCarga(null);
+
+    Promise.all([listarCategorias(), listarConhecimentos()])
+      .then(([cats, itens]) => {
+        if (!ativo) return;
+        setCategorias(cats);
+        setLista(itens);
+      })
+      .catch((err) => {
+        console.error("Erro ao carregar conhecimentos:", err); // se faltar índice, o link para criá-lo aparece aqui
+        if (ativo) setErroCarga("Não foi possível carregar os conhecimentos. Tente novamente.");
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [tentativa]);
+
   // Some o aviso depois de 3,5 segundos
   useEffect(() => {
     if (!aviso) return;
@@ -145,9 +123,19 @@ export default function Conhecimentos() {
     return () => clearTimeout(t);
   }, [aviso]);
 
+  const nomeDaCategoria = (id) => categorias.find((c) => c.id === id)?.nome ?? "Outros";
+  const nomesDasCategorias = ["Todos", ...categorias.map((c) => c.nome)];
+
+  // Cada conhecimento ganha o nome da categoria (a tela filtra e mostra pelo nome)
+  const itens = useMemo(
+    () => lista.map((k) => ({ ...k, categoria: nomeDaCategoria(k.categoriaId) })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lista, categorias]
+  );
+
   // Filtro por categoria + busca (título, descrição ou autor)
   const termo = busca.toLowerCase();
-  const listaFiltrada = lista.filter((k) => {
+  const listaFiltrada = itens.filter((k) => {
     const daCategoria = categoriaAtiva === "Todos" || k.categoria === categoriaAtiva;
     const daBusca =
       k.titulo.toLowerCase().includes(termo) ||
@@ -164,17 +152,35 @@ export default function Conhecimentos() {
     }
   };
 
-  const handleCriar = (e) => {
+  const handleCriar = async (e) => {
     e.preventDefault();
-    if (!novo.titulo.trim() || !novo.descricao.trim() || !novo.autor.trim()) {
+    const titulo = novo.titulo.trim();
+    const descricao = novo.descricao.trim();
+    if (!titulo || !descricao) {
       setAviso("Preencha todos os campos obrigatórios.");
       return;
     }
-    // Salva na hora (antes de sair da tela) e segue para a confirmação
-    const atualizada = [{ id: Date.now(), ...novo }, ...lista];
-    setLista(atualizada);
-    salvar(CHAVE_LISTA, atualizada);
-    navigate(ROTAS.conhecimentoOferecido, { state: { conhecimento: novo.titulo } });
+    if (titulo.length < 3 || titulo.length > 100) {
+      setAviso("O título precisa ter entre 3 e 100 caracteres.");
+      return;
+    }
+    if (descricao.length < 10 || descricao.length > 1000) {
+      setAviso("A descrição precisa ter entre 10 e 1000 caracteres.");
+      return;
+    }
+
+    setEnviando(true);
+    try {
+      await criarConhecimento(usuario, {
+        ...novo,
+        categoriaId: novo.categoriaId || categorias[0]?.id,
+      });
+      navigate(ROTAS.conhecimentoOferecido, { state: { conhecimento: titulo } });
+    } catch (err) {
+      console.error("Erro ao publicar conhecimento:", err);
+      setAviso("Não foi possível publicar agora. Tente novamente.");
+      setEnviando(false);
+    }
   };
 
   const handleSolicitar = (e) => {
@@ -209,7 +215,7 @@ export default function Conhecimentos() {
         {/* Filtros e busca */}
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
           <div className="d-flex gap-2 overflow-auto pb-2">
-            {CATEGORIAS.map((c) => (
+            {nomesDasCategorias.map((c) => (
               <button
                 key={c}
                 className={`chip ${categoriaAtiva === c ? "active" : ""}`}
@@ -256,7 +262,9 @@ export default function Conhecimentos() {
                         {k.cargo && <p className="small text-secondary mb-0 lh-sm">{k.cargo}</p>}
                       </div>
                     </div>
-                    {solicitadas.includes(k.id) ? (
+                    {k.donoId === usuario?.id ? (
+                      <span className="small text-secondary text-nowrap">Seu conhecimento</span>
+                    ) : solicitadas.includes(k.id) ? (
                       <button className="btn btn-done btn-sm text-nowrap" disabled>
                         ✓ Troca solicitada
                       </button>
@@ -272,16 +280,42 @@ export default function Conhecimentos() {
           ))}
         </div>
 
-        {/* Nenhum resultado */}
-        {listaFiltrada.length === 0 && (
+        {/* Carregando / erro / nenhum resultado */}
+        {carregando && (
+          <p className="text-center text-secondary my-5" role="status">Carregando conhecimentos…</p>
+        )}
+
+        {!carregando && erroCarga && (
           <div className="empty-state text-center p-5 my-4">
-            <h3 className="h5 fw-bold">Nenhum conhecimento encontrado</h3>
-            <p className="small text-secondary">
-              Tente buscar por outros termos ou mudar os filtros selecionados.
-            </p>
-            <button className="btn btn-brand btn-sm" onClick={limparFiltros}>
-              Limpar filtros
+            <h3 className="h5 fw-bold">Algo deu errado</h3>
+            <p className="small text-secondary">{erroCarga}</p>
+            <button className="btn btn-brand btn-sm" onClick={() => setTentativa((n) => n + 1)}>
+              Tentar de novo
             </button>
+          </div>
+        )}
+
+        {!carregando && !erroCarga && listaFiltrada.length === 0 && (
+          <div className="empty-state text-center p-5 my-4">
+            {lista.length === 0 ? (
+              <>
+                <h3 className="h5 fw-bold">Ainda não há conhecimentos publicados</h3>
+                <p className="small text-secondary">Seja a primeira pessoa a compartilhar o que sabe.</p>
+                <button className="btn btn-brand btn-sm" onClick={() => setOfertaAberta(true)}>
+                  + Oferecer conhecimento
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="h5 fw-bold">Nenhum conhecimento encontrado</h3>
+                <p className="small text-secondary">
+                  Tente buscar por outros termos ou mudar os filtros selecionados.
+                </p>
+                <button className="btn btn-brand btn-sm" onClick={limparFiltros}>
+                  Limpar filtros
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -360,11 +394,11 @@ export default function Conhecimentos() {
                 <select
                   id="of-categoria"
                   className="form-select"
-                  value={novo.categoria}
-                  onChange={(e) => setNovo({ ...novo, categoria: e.target.value })}
+                  value={novo.categoriaId || categorias[0]?.id || ""}
+                  onChange={(e) => setNovo({ ...novo, categoriaId: e.target.value })}
                 >
-                  {CATEGORIAS.filter((c) => c !== "Todos").map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                  {categorias.map((c) => (
+                    <option key={c.id} value={c.id}>{c.nome}</option>
                   ))}
                 </select>
               </div>
@@ -381,19 +415,6 @@ export default function Conhecimentos() {
                   ))}
                 </select>
               </div>
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="of-autor" className="form-label">Seu nome *</label>
-              <input
-                id="of-autor"
-                type="text"
-                className="form-control"
-                required
-                placeholder="Ex: Matheus Lima"
-                value={novo.autor}
-                onChange={(e) => setNovo({ ...novo, autor: e.target.value })}
-              />
             </div>
 
             <div className="mb-3">
@@ -425,7 +446,9 @@ export default function Conhecimentos() {
               <button type="button" className="btn btn-cancel btn-sm" onClick={fecharOferta}>
                 Cancelar
               </button>
-              <button type="submit" className="btn btn-brand btn-sm">Publicar conhecimento</button>
+              <button type="submit" className="btn btn-brand btn-sm" disabled={enviando}>
+                {enviando ? "Publicando…" : "Publicar conhecimento"}
+              </button>
             </div>
           </form>
         </Janela>
