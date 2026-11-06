@@ -86,6 +86,7 @@ export default function Conhecimentos() {
 
   const [categoriaAtiva, setCategoriaAtiva] = useState("Todos");
   const [busca, setBusca] = useState("");
+  const [tipoAtivo, setTipoAtivo] = useState("todos"); // "todos" | "ensinar" | "aprender"
 
   // trocaSelecionada = conhecimento escolhido ou null | ofertaAberta = true/false
   const [trocaSelecionada, setTrocaSelecionada] = useState(null);
@@ -143,7 +144,8 @@ export default function Conhecimentos() {
       k.titulo.toLowerCase().includes(termo) ||
       k.descricao.toLowerCase().includes(termo) ||
       k.autor.toLowerCase().includes(termo);
-    return daCategoria && daBusca;
+    const daTipo = tipoAtivo === "todos" || k.tipo === tipoAtivo;
+    return daCategoria && daBusca && daTipo;
   });
 
   const fecharOferta = () => {
@@ -197,7 +199,7 @@ export default function Conhecimentos() {
   const limparFiltros = () => {
     setCategoriaAtiva("Todos");
     setBusca("");
-  };
+    setTipoAtivo("todos");  };
 
   return (
     <>
@@ -212,6 +214,19 @@ export default function Conhecimentos() {
           <button className="btn btn-dark-bt text-nowrap" onClick={() => setOfertaAberta(true)}>
             + Oferecer conhecimento
           </button>
+        </div>
+
+        {/* Filtro por tipo */}
+        <div className="d-flex flex-wrap gap-2 mb-3">
+          {[["todos", "Todos os tipos"], ...Object.entries(TIPOS)].map(([valor, rotulo]) => (
+            <button
+              key={valor}
+              className={`chip ${tipoAtivo === valor ? "active" : ""}`}
+              onClick={() => setTipoAtivo(valor)}
+            >
+              {rotulo}
+            </button>
+          ))}
         </div>
 
         {/* Filtros e busca */}
