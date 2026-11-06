@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ROTAS } from "../routes.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import {
+  TIPOS,
   criarConhecimento,
   listarCategorias,
   listarConhecimentos,
@@ -16,6 +17,7 @@ const FORMULARIO_VAZIO = {
   nivel: "Iniciante",
   descricao: "",
   cargo: "",
+  tipo: "ensinar",
 };
 
 // As solicitações de troca ainda ficam no navegador (viram coleção "exchanges" numa próxima etapa)
@@ -175,7 +177,7 @@ export default function Conhecimentos() {
         ...novo,
         categoriaId: novo.categoriaId || categorias[0]?.id,
       });
-      navigate(ROTAS.conhecimentoOferecido, { state: { conhecimento: titulo } });
+      navigate(ROTAS.conhecimentoOferecido, { state: { conhecimento: titulo, tipo: novo.tipo } });
     } catch (err) {
       console.error("Erro ao publicar conhecimento:", err);
       setAviso("Não foi possível publicar agora. Tente novamente.");
@@ -245,7 +247,16 @@ export default function Conhecimentos() {
               <article className="card-bt card-bt--hover h-100 p-4 d-flex flex-column justify-content-between">
                 <div>
                   <div className="d-flex align-items-center justify-content-between gap-2 mb-3">
-                    <span className="tag">{k.categoria}</span>
+                    <div className="d-flex flex-wrap align-items-center gap-2">
+                      <span className="tag">{k.categoria}</span>
+                      <span
+                        className={`badge rounded-pill ${
+                          k.tipo === "aprender" ? "text-bg-warning" : "text-bg-primary"
+                        }`}
+                      >
+                        {TIPOS[k.tipo]}
+                      </span>
+                    </div>
                     <span className={`nivel ${classeNivel(k.nivel)}`}>{k.nivel}</span>
                   </div>
                   <h3 className="h5 fw-bold">{k.titulo}</h3>
@@ -369,12 +380,26 @@ export default function Conhecimentos() {
       {/* Pop-up: oferecer conhecimento */}
       {ofertaAberta && (
         <Janela onFechar={fecharOferta}>
-          <h3 className="h4 fw-bold">Oferecer novo conhecimento</h3>
+        <h3 className="h4 fw-bold">Cadastrar conhecimento</h3>
           <p className="small text-secondary">
-            Preencha os detalhes do conhecimento que você deseja compartilhar com a comunidade.
+             Escolha se você quer ensinar ou aprender e preencha os detalhes.
           </p>
 
           <form onSubmit={handleCriar}>
+            <div className="mb-3">
+              <label htmlFor="of-tipo" className="form-label">Tipo *</label>
+              <select
+                id="of-tipo"
+                className="form-select"
+                value={novo.tipo}
+                onChange={(e) => setNovo({ ...novo, tipo: e.target.value })}
+              >
+                {Object.entries(TIPOS).map(([valor, rotulo]) => (
+                  <option key={valor} value={valor}>{rotulo}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="mb-3">
               <label htmlFor="of-titulo" className="form-label">Título do conhecimento *</label>
               <input
