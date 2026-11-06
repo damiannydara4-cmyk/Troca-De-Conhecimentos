@@ -15,9 +15,10 @@ export default function ConhecimentoOferecido() {
         fill="none" stroke="#2f2c79" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 13 9 19 20 4" />
         </svg>
-        <h1>Conhecimento oferecido!</h1>
+        <h1>{state.tipo === "aprender" ? "Interesse publicado!" : "Conhecimento oferecido!"}</h1>
         <p>
-          Sua oferta de <strong className="text-body">{state.conhecimento}</strong> foi publicada
+           {state.tipo === "aprender" ? "Seu interesse em aprender" : "Sua oferta de"}{" "}
+          <strong className="text-body">{state.conhecimento}</strong> foi publicado
           e já está visível para a comunidade.
         </p>
         <Link to={ROTAS.conhecimentos} className="btn btn-brand w-100">
