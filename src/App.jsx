@@ -6,6 +6,7 @@ import RotaProtegida from "./components/RotaProtegida.jsx";
 import Inicio from "./pages/Inicio.jsx";
 import Conhecimentos from "./pages/Conhecimentos.jsx";
 import ConhecimentoOferecido from "./pages/ConhecimentoOferecido.jsx";
+import MeusConhecimentos from "./pages/MeusConhecimentos.jsx";
 import FaleComEquipe from "./pages/FaleComEquipe.jsx";
 import MensagemEnviada from "./pages/MensagemEnviada.jsx";
 import Login from "./pages/Login.jsx";
@@ -31,6 +32,7 @@ export default function App() {
         <Route element={<RotaProtegida />}>
           <Route path={ROTAS.conhecimentos} element={<Conhecimentos />} />
           <Route path={ROTAS.conhecimentoOferecido} element={<ConhecimentoOferecido />} />
+          <Route path={ROTAS.meusConhecimentos} element={<MeusConhecimentos />} />
         </Route>
 
         {/* Endereço inexistente volta para o início */}

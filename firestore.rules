@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Logado E com e-mail confirmado
+    function verificado() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    // O documento pertence ao usuário logado (ID do documento = uid)
+    function donoDoPerfil(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function perfilValido(dados) {
+      return dados.keys().hasOnly(['nome', 'bio', 'fotoUrl', 'criadoEm', 'atualizadoEm'])
+        && dados.keys().hasAll(['nome', 'criadoEm', 'atualizadoEm'])
+        && dados.nome is string
+        && dados.nome.size() >= 2
+        && dados.nome.size() <= 80;
+    }
+
+    match /categories/{categoriaId} {
+      allow read: if verificado();
+      allow write: if false; // só pelo Console
+    }
+
+    match /users/{uid} {
+      allow read: if verificado();
+
+      // No cadastro a pessoa ainda não confirmou o e-mail, por isso aqui não exigimos "verificado"
+      allow create: if donoDoPerfil(uid)
+        && perfilValido(request.resource.data)
+        && request.resource.data.criadoEm == request.time
+        && request.resource.data.atualizadoEm == request.time;
+
+      allow update: if verificado() && donoDoPerfil(uid)
+        && perfilValido(request.resource.data)
+        && request.resource.data.criadoEm == resource.data.criadoEm
+        && request.resource.data.atualizadoEm == request.time;
+
+      allow delete: if false;
+    }
+
+    function conhecimentoValido(dados) {
+      return dados.keys().hasOnly(['titulo', 'descricao', 'categoriaId', 'nivel', 'donoId', 'donoNome', 'donoCargo', 'tipo', 'ativo', 'criadoEm', 'atualizadoEm']) // NOVO: 'tipo'
+        && dados.keys().hasAll(['titulo', 'descricao', 'categoriaId', 'nivel', 'donoId', 'donoNome', 'ativo', 'criadoEm', 'atualizadoEm'])
+        && dados.titulo is string && dados.titulo.size() >= 3 && dados.titulo.size() <= 100
+        && dados.descricao is string && dados.descricao.size() >= 10 && dados.descricao.size() <= 1000
+        && dados.nivel in ['Iniciante', 'Intermediário', 'Avançado']
+        && dados.donoNome is string && dados.donoNome.size() >= 1 && dados.donoNome.size() <= 80
+        && dados.ativo is bool
+        && (!('tipo' in dados) || dados.tipo in ['ensinar', 'aprender']) // NOVO: tipo opcional, mas se existir tem que ser válido
+        && (!('donoCargo' in dados) || (dados.donoCargo is string && dados.donoCargo.size() <= 80))
+        && exists(/databases/$(database)/documents/categories/$(dados.categoriaId));
+    }
+
+    match /knowledge/{conhecimentoId} {
+      allow read: if verificado();
+
+      allow create: if verificado()
+        && conhecimentoValido(request.resource.data)
+        && request.resource.data.donoId == request.auth.uid
+        && request.resource.data.ativo == true
+        && request.resource.data.criadoEm == request.time
+        && request.resource.data.atualizadoEm == request.time;
+
+      // Só o dono edita (apagar = mudar "ativo" para false; delete direto fica bloqueado)
+      allow update: if verificado()
+        && resource.data.donoId == request.auth.uid
+        && conhecimentoValido(request.resource.data)
+        && request.resource.data.donoId == resource.data.donoId
+        && request.resource.data.criadoEm == resource.data.criadoEm
+        && request.resource.data.atualizadoEm == request.time;
+
+      allow delete: if false;
+    }
+
+    // Qualquer coleção sem regra acima fica BLOQUEADA (padrão do Firestore).
+  }
+}

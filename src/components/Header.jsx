@@ -20,6 +20,9 @@ export default function Header() {
         <nav className="d-flex flex-wrap align-items-center gap-3" aria-label="Principal">
           <NavLink to={ROTAS.inicio} end className="nav-link-bt">Início</NavLink>
           <NavLink to={ROTAS.conhecimentos} className="nav-link-bt">Conhecimentos</NavLink>
+          {!carregando && autenticado && (
+            <NavLink to={ROTAS.meusConhecimentos} className="nav-link-bt">Meus conhecimentos</NavLink>
+          )}
           <NavLink to={ROTAS.contato} className="nav-link-bt">Fale com a equipe</NavLink>
 
           {!carregando && autenticado ? (
