@@ -7,7 +7,9 @@ import {
   criarConhecimento,
   listarCategorias,
   listarConhecimentos,
+  listarMeusConhecimentos,
 } from "../services/conhecimentoService.js";
+import { criarSolicitacao, listarIdsSolicitadosAtivos } from "../services/trocaService.js";
 
 const NIVEIS = ["Iniciante", "Intermediário", "Avançado"];
 
@@ -20,25 +22,7 @@ const FORMULARIO_VAZIO = {
   tipo: "ensinar",
 };
 
-// As solicitações de troca ainda ficam no navegador (viram coleção "exchanges" numa próxima etapa)
-const CHAVE_SOLICITADAS = "banco-de-trocas:solicitadas";
 
-const lerSalvo = (chave, padrao) => {
-  try {
-    const salvo = localStorage.getItem(chave);
-    return salvo ? JSON.parse(salvo) : padrao;
-  } catch {
-    return padrao;
-  }
-};
-
-const salvar = (chave, valor) => {
-  try {
-    localStorage.setItem(chave, JSON.stringify(valor));
-  } catch {
-    /* sem armazenamento disponível: vale só até recarregar a página */
-  }
-};
 
 // Classe de cor do selo de nível
 const classeNivel = (nivel) => {
@@ -81,8 +65,15 @@ export default function Conhecimentos() {
   const [tentativa, setTentativa] = useState(0); // aumenta para "tentar de novo"
   const [enviando, setEnviando] = useState(false);
 
-  // Ids dos conhecimentos que já tiveram troca solicitada
-  const [solicitadas, setSolicitadas] = useState(() => lerSalvo(CHAVE_SOLICITADAS, []));
+  // Ids dos conhecimentos que eu já pedi em troca (e ainda estão em andamento) — vem do Firestore
+  const [solicitadas, setSolicitadas] = useState([]);
+
+  // Formulário do pop-up "Solicitar troca"
+  const [meusConhecimentos, setMeusConhecimentos] = useState([]); // o que eu posso oferecer
+  const [carregandoMeus, setCarregandoMeus] = useState(false);
+  const [ofertaId, setOfertaId] = useState("");
+  const [mensagemInicial, setMensagemInicial] = useState("");
+  const [enviandoTroca, setEnviandoTroca] = useState(false);
 
   const [categoriaAtiva, setCategoriaAtiva] = useState("Todos");
   const [busca, setBusca] = useState("");
@@ -100,11 +91,12 @@ export default function Conhecimentos() {
     setCarregando(true);
     setErroCarga(null);
 
-    Promise.all([listarCategorias(), listarConhecimentos()])
-      .then(([cats, itens]) => {
+        Promise.all([listarCategorias(), listarConhecimentos(), listarIdsSolicitadosAtivos(usuario.id)])
+      .then(([cats, itens, idsSolicitados]) => {
         if (!ativo) return;
         setCategorias(cats);
         setLista(itens);
+        setSolicitadas(idsSolicitados);
       })
       .catch((err) => {
         console.error("Erro ao carregar conhecimentos:", err); // se faltar índice, o link para criá-lo aparece aqui
@@ -117,7 +109,7 @@ export default function Conhecimentos() {
     return () => {
       ativo = false;
     };
-  }, [tentativa]);
+  }, [tentativa, usuario.id]);
 
   // Some o aviso depois de 3,5 segundos
   useEffect(() => {
@@ -187,13 +179,63 @@ export default function Conhecimentos() {
     }
   };
 
-  const handleSolicitar = (e) => {
+  // Abre o pop-up e carrega os conhecimentos MEUS (as opções de "o que eu ofereço")
+  const abrirSolicitacao = async (conhecimento) => {
+    setTrocaSelecionada(conhecimento);
+    setOfertaId("");
+    setMensagemInicial("");
+    setMeusConhecimentos([]);
+    setCarregandoMeus(true);
+    try {
+      const meus = await listarMeusConhecimentos(usuario.id);
+      setMeusConhecimentos(meus);
+      if (meus.length > 0) setOfertaId(meus[0].id);
+    } catch (err) {
+      console.error("Erro ao carregar meus conhecimentos:", err);
+      setAviso("Não foi possível carregar seus conhecimentos. Tente novamente.");
+    } finally {
+      setCarregandoMeus(false);
+    }
+  };
+
+  const fecharSolicitacao = () => {
+    if (!enviandoTroca) setTrocaSelecionada(null);
+  };
+
+  const handleSolicitar = async (e) => {
     e.preventDefault();
-    const atualizada = [...solicitadas, trocaSelecionada.id];
-    setSolicitadas(atualizada);
-    salvar(CHAVE_SOLICITADAS, atualizada);
-    setAviso(`Solicitação enviada com sucesso para ${trocaSelecionada.autor}!`);
-    setTrocaSelecionada(null);
+    const oferecido = meusConhecimentos.find((m) => m.id === ofertaId);
+    if (!oferecido) {
+      setAviso("Escolha um dos seus conhecimentos para oferecer em troca.");
+      return;
+    }
+
+    setEnviandoTroca(true);
+    try {
+      const { mensagemEnviada } = await criarSolicitacao(usuario, {
+        desejado: trocaSelecionada,
+        oferecido,
+        mensagemInicial,
+      });
+      setSolicitadas((atuais) => [...atuais, trocaSelecionada.id]);
+      setAviso(
+        mensagemEnviada
+          ? `Solicitação enviada com sucesso para ${trocaSelecionada.autor}!`
+          : "Solicitação enviada, mas a mensagem inicial não foi. Envie-a pela tela Conversas."
+      );
+      setTrocaSelecionada(null);
+    } catch (err) {
+      console.error("Erro ao solicitar troca:", err);
+      setAviso(
+        err?.code === "permission-denied"
+          ? "Sem permissão para solicitar esta troca."
+          : err?.code
+            ? "Não foi possível enviar a solicitação. Tente novamente."
+            : err.message
+      );
+    } finally {
+      setEnviandoTroca(false);
+    }
   };
 
   const limparFiltros = () => {
@@ -295,7 +337,7 @@ export default function Conhecimentos() {
                         ✓ Troca solicitada
                       </button>
                     ) : (
-                      <button className="btn btn-line btn-sm text-nowrap" onClick={() => setTrocaSelecionada(k)}>
+                      <button className="btn btn-line btn-sm text-nowrap" onClick={() => abrirSolicitacao(k)}>
                         Solicitar troca
                       </button>
                     )}
@@ -348,7 +390,7 @@ export default function Conhecimentos() {
 
       {/* Pop-up: solicitar troca */}
       {trocaSelecionada && (
-        <Janela onFechar={() => setTrocaSelecionada(null)}>
+        <Janela onFechar={fecharSolicitacao}>
           <span className="tag">{trocaSelecionada.categoria}</span>
           <h3 className="h4 fw-bold mt-2">Solicitar troca de conhecimento</h3>
           <p className="small text-secondary">
@@ -360,33 +402,56 @@ export default function Conhecimentos() {
             <p className="small text-secondary mb-0">{trocaSelecionada.descricao}</p>
           </div>
 
-          <form onSubmit={handleSolicitar}>
+                    <form onSubmit={handleSolicitar}>
             <div className="mb-3">
               <label htmlFor="troca-oferta" className="form-label">
-                Qual habilidade ou conhecimento você oferece em troca?
+                Qual dos seus conhecimentos você oferece em troca?
               </label>
-              <input
-                id="troca-oferta"
-                type="text"
-                className="form-control"
-                required
-                placeholder="Ex: Introdução ao Figma, Inglês Intermediário..."
-              />
+              {carregandoMeus ? (
+                <p className="small text-secondary mb-0">Carregando seus conhecimentos…</p>
+              ) : meusConhecimentos.length === 0 ? (
+                <div className="alert-erro mb-0">
+                  Você ainda não cadastrou nenhum conhecimento. Use “+ Oferecer conhecimento” e volte aqui.
+                </div>
+              ) : (
+                <select
+                  id="troca-oferta"
+                  className="form-select"
+                  value={ofertaId}
+                  onChange={(e) => setOfertaId(e.target.value)}
+                  required
+                >
+                  {meusConhecimentos.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.titulo} ({TIPOS[m.tipo]})
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
             <div className="mb-3">
               <label htmlFor="troca-msg" className="form-label">Mensagem inicial (opcional)</label>
               <textarea
                 id="troca-msg"
                 rows="3"
+                maxLength={500}
                 className="form-control"
                 placeholder="Apresente-se brevemente e sugira dias ou horários preferidos..."
+                value={mensagemInicial}
+                onChange={(e) => setMensagemInicial(e.target.value)}
               ></textarea>
             </div>
             <div className="d-flex justify-content-end gap-2">
-              <button type="button" className="btn btn-cancel btn-sm" onClick={() => setTrocaSelecionada(null)}>
+              <button type="button" className="btn btn-cancel btn-sm" onClick={fecharSolicitacao} disabled={enviandoTroca}>
                 Cancelar
               </button>
-              <button type="submit" className="btn btn-brand btn-sm">Confirmar solicitação</button>
+              <button
+                type="submit"
+                className="btn btn-brand btn-sm"
+                disabled={enviandoTroca || carregandoMeus || meusConhecimentos.length === 0}
+              >
+                {enviandoTroca ? "Enviando…" : "Confirmar solicitação"}
+              </button>
             </div>
           </form>
         </Janela>

@@ -513,3 +513,77 @@ section[id] { scroll-margin-top: 80px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* ---------- 11. Trocas e conversas ---------- */
+.min-w-0 { min-width: 0; }
+
+/* Selo de status da troca */
+.status-troca {
+  display: inline-block;
+  border: 1px solid var(--line);
+  color: var(--navy);
+  font-size: .75rem;
+  font-weight: 700;
+  padding: .3rem .7rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.status-troca--pendente  { background: #FEF3C7; border-color: #FDE68A; }
+.status-troca--aceita    { background: var(--mint-200); border-color: var(--green); }
+.status-troca--recusada  { background: #FFE4E6; border-color: #FECDD3; }
+.status-troca--cancelada { background: #F1F5F9; border-color: #CBD5E1; }
+.status-troca--concluida { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+
+/* Bolinha com a quantidade de mensagens não lidas */
+.badge-nao-lidas {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--navy);
+  font-size: .7rem;
+  font-weight: 800;
+}
+
+/* Lista de conversas */
+.conversa-item {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: 1rem 1.25rem;
+  color: var(--navy);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  transition: background .15s ease;
+}
+.conversa-item:last-child { border-bottom: 0; }
+.conversa-item:hover { background: var(--mint-100); color: var(--navy); }
+.conversa-item .conversa-item__texto { color: var(--muted); }
+.conversa-item--nao-lida .conversa-item__texto { color: var(--navy); font-weight: 700; }
+
+/* Tela de uma conversa */
+.chat-box { display: flex; flex-direction: column; height: min(72vh, 680px); }
+.chat-mensagens {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: 1rem;
+  background: var(--bg);
+}
+.bolha {
+  max-width: 78%;
+  padding: .55rem .85rem;
+  border-radius: 14px;
+  font-size: .92rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.bolha--minha  { align-self: flex-end; background: var(--indigo); color: #fff; border-bottom-right-radius: 4px; }
+.bolha--outra  { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.bolha__meta   { display: block; font-size: .68rem; opacity: .75; margin-top: .2rem; }
