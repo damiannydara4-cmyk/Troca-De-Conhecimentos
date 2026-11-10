@@ -76,6 +76,181 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // =====================================================================
+    // ETAPA 7 — SOLICITAÇÕES DE TROCA (coleção "exchanges")
+    // =====================================================================
+
+    function trocaNova(d) {
+      return d.keys().hasOnly(['solicitanteId', 'solicitanteNome', 'destinatarioId', 'destinatarioNome',
+                               'conhecimentoDesejadoId', 'conhecimentoDesejadoTitulo',
+                               'conhecimentoOferecidoId', 'conhecimentoOferecidoTitulo',
+                               'status', 'criadoEm', 'atualizadoEm'])
+        && d.keys().hasAll(['solicitanteId', 'solicitanteNome', 'destinatarioId', 'destinatarioNome',
+                            'conhecimentoDesejadoId', 'conhecimentoDesejadoTitulo',
+                            'conhecimentoOferecidoId', 'conhecimentoOferecidoTitulo',
+                            'status', 'criadoEm', 'atualizadoEm'])
+        && d.solicitanteId == request.auth.uid                 // quem pede é o usuário logado
+        && d.destinatarioId != request.auth.uid                // não dá para pedir troca consigo mesmo
+        && d.status == 'pendente'                              // toda solicitação nasce pendente
+        && d.criadoEm == request.time
+        && d.atualizadoEm == request.time
+        // nome do solicitante = nome do perfil (ninguém se passa por outra pessoa)
+        && d.solicitanteNome == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.nome
+        // o conhecimento desejado é mesmo do destinatário e está ativo
+        && get(/databases/$(database)/documents/knowledge/$(d.conhecimentoDesejadoId)).data.donoId == d.destinatarioId
+        && get(/databases/$(database)/documents/knowledge/$(d.conhecimentoDesejadoId)).data.ativo == true
+        && get(/databases/$(database)/documents/knowledge/$(d.conhecimentoDesejadoId)).data.titulo == d.conhecimentoDesejadoTitulo
+        && get(/databases/$(database)/documents/knowledge/$(d.conhecimentoDesejadoId)).data.donoNome == d.destinatarioNome
+        // o conhecimento oferecido é mesmo do solicitante e está ativo
+        && get(/databases/$(database)/documents/knowledge/$(d.conhecimentoOferecidoId)).data.donoId == request.auth.uid
+        && get(/databases/$(database)/documents/knowledge/$(d.conhecimentoOferecidoId)).data.ativo == true
+        && get(/databases/$(database)/documents/knowledge/$(d.conhecimentoOferecidoId)).data.titulo == d.conhecimentoOferecidoTitulo;
+    }
+
+    // Transições permitidas (só estes campos podem mudar, e só nestes caminhos):
+    //   pendente -> aceita | recusada  (só o destinatário)
+    //   pendente -> cancelada          (só o solicitante)
+    //   aceita   -> concluida          (qualquer participante)
+    // recusada, cancelada e concluida são FINAIS: nenhuma regra permite alterá-las.
+    function trocaAtualizacaoValida(antes, depois) {
+      return depois.atualizadoEm == request.time
+        && (
+          (antes.status == 'pendente'
+            && request.auth.uid == antes.destinatarioId
+            && depois.status in ['aceita', 'recusada']
+            && depois.respondidaEm == request.time
+            && depois.diff(antes).affectedKeys().hasOnly(['status', 'respondidaEm', 'atualizadoEm']))
+          ||
+          (antes.status == 'pendente'
+            && request.auth.uid == antes.solicitanteId
+            && depois.status == 'cancelada'
+            && depois.canceladaEm == request.time
+            && depois.diff(antes).affectedKeys().hasOnly(['status', 'canceladaEm', 'atualizadoEm']))
+          ||
+          (antes.status == 'aceita'
+            && request.auth.uid in [antes.solicitanteId, antes.destinatarioId]
+            && depois.status == 'concluida'
+            && depois.concluidaEm == request.time
+            && depois.diff(antes).affectedKeys().hasOnly(['status', 'concluidaEm', 'atualizadoEm']))
+        );
+    }
+
+    match /exchanges/{trocaId} {
+      // Só os dois envolvidos leem (a consulta do app sempre filtra por solicitanteId OU destinatarioId)
+      allow read: if verificado()
+        && (resource.data.solicitanteId == request.auth.uid
+            || resource.data.destinatarioId == request.auth.uid);
+
+      allow create: if verificado() && trocaNova(request.resource.data);
+
+      allow update: if verificado() && trocaAtualizacaoValida(resource.data, request.resource.data);
+
+      allow delete: if false; // o histórico nunca é apagado
+    }
+
+    // =====================================================================
+    // ETAPA 8 — CONVERSAS (coleção "conversations" + subcoleção "messages")
+    // O id da conversa é o MESMO id da troca: uma troca = uma conversa.
+    // =====================================================================
+
+    function conversaNova(conversaId, d) {
+      return d.keys().hasOnly(['participantes', 'participantesNomes', 'exchangeId', 'assunto',
+                               'naoLidas', 'criadoEm', 'atualizadoEm'])
+        && d.keys().hasAll(['participantes', 'participantesNomes', 'exchangeId', 'assunto',
+                            'naoLidas', 'criadoEm', 'atualizadoEm'])
+        && d.exchangeId == conversaId
+        && d.participantes is list
+        && d.participantes.size() == 2
+        && request.auth.uid in d.participantes
+        && d.assunto is string && d.assunto.size() <= 260
+        && d.criadoEm == request.time
+        && d.atualizadoEm == request.time
+        && d.participantesNomes.keys().hasOnly(d.participantes)
+        && d.naoLidas.keys().hasOnly(d.participantes)
+        && d.naoLidas[d.participantes[0]] == 0
+        && d.naoLidas[d.participantes[1]] == 0
+        // os participantes são exatamente os dois da troca, e a troca não está recusada/cancelada
+        && d.participantes.hasOnly([
+             get(/databases/$(database)/documents/exchanges/$(d.exchangeId)).data.solicitanteId,
+             get(/databases/$(database)/documents/exchanges/$(d.exchangeId)).data.destinatarioId])
+        && get(/databases/$(database)/documents/exchanges/$(d.exchangeId)).data.status in ['pendente', 'aceita', 'concluida']
+        && d.participantesNomes[get(/databases/$(database)/documents/exchanges/$(d.exchangeId)).data.solicitanteId]
+             == get(/databases/$(database)/documents/exchanges/$(d.exchangeId)).data.solicitanteNome
+        && d.participantesNomes[get(/databases/$(database)/documents/exchanges/$(d.exchangeId)).data.destinatarioId]
+             == get(/databases/$(database)/documents/exchanges/$(d.exchangeId)).data.destinatarioNome;
+    }
+
+    function outroParticipante(c) {
+      return c.participantes[0] == request.auth.uid ? c.participantes[1] : c.participantes[0];
+    }
+
+    // Dois tipos de atualização:
+    //  (1) marcar como lida: só zera o MEU contador
+    //  (2) nova mensagem: troca a "ultimaMensagem" (minha) e soma +1 no contador do OUTRO
+    function conversaAtualizacaoValida(antes, depois) {
+      return request.auth.uid in antes.participantes
+        && depois.diff(antes).affectedKeys().hasOnly(['ultimaMensagem', 'naoLidas', 'atualizadoEm'])
+        && (
+          (depois.diff(antes).affectedKeys().hasOnly(['naoLidas'])
+            && depois.naoLidas.diff(antes.naoLidas).affectedKeys().hasOnly([request.auth.uid])
+            && depois.naoLidas[request.auth.uid] == 0)
+          ||
+          (depois.atualizadoEm == request.time
+            && depois.ultimaMensagem.remetenteId == request.auth.uid
+            && depois.ultimaMensagem.criadoEm == request.time
+            && depois.ultimaMensagem.texto is string
+            && depois.ultimaMensagem.texto.size() >= 1 && depois.ultimaMensagem.texto.size() <= 120
+            && depois.naoLidas.diff(antes.naoLidas).affectedKeys().hasOnly([outroParticipante(antes)])
+            && depois.naoLidas[outroParticipante(antes)] == antes.naoLidas[outroParticipante(antes)] + 1)
+        );
+    }
+
+    match /conversations/{conversaId} {
+      // "get" aceita documento inexistente (resource == null) para o app poder checar se a conversa já existe
+      allow get: if verificado() && (resource == null || request.auth.uid in resource.data.participantes);
+      // "list": a consulta do app usa where("participantes", "array-contains", uid)
+      allow list: if verificado() && request.auth.uid in resource.data.participantes;
+
+      allow create: if verificado() && conversaNova(conversaId, request.resource.data);
+      allow update: if verificado() && conversaAtualizacaoValida(resource.data, request.resource.data);
+      allow delete: if false;
+
+      match /messages/{mensagemId} {
+        function conversa() {
+          return get(/databases/$(database)/documents/conversations/$(conversaId)).data;
+        }
+
+        // Só participantes leem
+        allow read: if verificado() && request.auth.uid in conversa().participantes;
+
+        // Só participantes enviam, em nome próprio, e só em trocas não recusadas/canceladas
+        allow create: if verificado()
+          && request.auth.uid in conversa().participantes
+          && request.resource.data.keys().hasOnly(['conversaId', 'remetenteId', 'texto', 'lida', 'criadoEm'])
+          && request.resource.data.keys().hasAll(['conversaId', 'remetenteId', 'texto', 'lida', 'criadoEm'])
+          && request.resource.data.conversaId == conversaId
+          && request.resource.data.remetenteId == request.auth.uid
+          && request.resource.data.texto is string
+          && request.resource.data.texto.size() >= 1
+          && request.resource.data.texto.size() <= 2000
+          && request.resource.data.lida == false
+          && request.resource.data.criadoEm == request.time
+          && get(/databases/$(database)/documents/exchanges/$(conversa().exchangeId)).data.status
+               in ['pendente', 'aceita', 'concluida'];
+
+        // Só o DESTINATÁRIO da mensagem marca como lida (nunca o remetente), e só isso pode mudar
+        allow update: if verificado()
+          && request.auth.uid in conversa().participantes
+          && resource.data.remetenteId != request.auth.uid
+          && resource.data.lida == false
+          && request.resource.data.lida == true
+          && request.resource.data.lidaEm == request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lida', 'lidaEm']);
+
+        allow delete: if false;
+      }
+    }
+
     // Qualquer coleção sem regra acima fica BLOQUEADA (padrão do Firestore).
   }
 }
