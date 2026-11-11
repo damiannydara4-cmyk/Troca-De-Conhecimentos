@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { ROTAS } from "../routes.js";
+import { ROTAS, caminhoPerfil } from "../routes.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useConversas } from "../contexts/ConversasContext.jsx";
 
@@ -42,9 +42,9 @@ export default function Header() {
 
           {!carregando && autenticado ? (
             <>
-              <span className="small text-secondary">
+              <Link to={caminhoPerfil(usuario.id)} className="small link-inline" title="Ver meu perfil">
                 Olá, {usuario?.nome?.split(" ")[0] ?? "usuário"}
-              </span>
+              </Link>
               <button type="button" className="btn btn-line btn-sm" onClick={handleSair}>
                 Sair
               </button>
