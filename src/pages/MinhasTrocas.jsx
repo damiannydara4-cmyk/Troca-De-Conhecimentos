@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { caminhoConversa } from "../routes.js";
+import { Link, useNavigate } from "react-router-dom";
+import { caminhoConversa, caminhoPerfil } from "../routes.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useConversas } from "../contexts/ConversasContext.jsx";
 import StatusTroca from "../components/StatusTroca.jsx";
+import Estrelas from "../components/Estrelas.jsx";
+import AvaliacaoModal from '../components/AvaliacaoModal';
 import {
   STATUS,
   STATUS_ATIVOS,
@@ -15,6 +17,7 @@ import {
   recusarSolicitacao,
 } from "../services/trocaService.js";
 import { garantirConversa } from "../services/chatService.js";
+import { criarAvaliacao, observarAvaliacoesFeitas } from "../services/avaliacaoService.js";
 import { formatarDataHora, iniciais } from "../utils/formatadores.js";
 
 const FILTROS_HISTORICO = [
@@ -44,6 +47,11 @@ export default function MinhasTrocas() {
   const [ocupadoId, setOcupadoId] = useState(null); // troca com ação em andamento
   const [aviso, setAviso] = useState(null);
 
+  // Avaliações que EU já fiz: Map (id da troca -> avaliação)
+  const [avaliacoesFeitas, setAvaliacoesFeitas] = useState(new Map());
+  const [avaliandoTroca, setAvaliandoTroca] = useState(null); // troca aberta no pop-up de avaliação
+  const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false);
+
   // Escuta as trocas em tempo real e encerra o listener ao sair da tela
   useEffect(() => {
     setCarregando(true);
@@ -63,6 +71,13 @@ export default function MinhasTrocas() {
     return cancelar;
   }, [usuario.id]);
 
+  // Escuta as avaliações que eu já fiz (para esconder o botão "Avaliar" nas trocas já avaliadas)
+  useEffect(() => {
+    return observarAvaliacoesFeitas(usuario.id, setAvaliacoesFeitas, (err) =>
+      console.error("Erro ao carregar avaliações:", err)
+    );
+  }, [usuario.id]);
+
   useEffect(() => {
     if (!aviso) return undefined;
     const t = setTimeout(() => setAviso(null), 3500);
@@ -76,6 +91,9 @@ export default function MinhasTrocas() {
     (t) => STATUS_HISTORICO.includes(t.status) && (filtroHistorico === "todas" || t.status === filtroHistorico)
   );
   const pendentesParaMim = recebidas.filter((t) => t.status === STATUS.pendente).length;
+  const concluidasSemMinhaAvaliacao = trocas.filter(
+    (t) => t.status === STATUS.concluida && !avaliacoesFeitas.has(t.id)
+  ).length;
 
   const listas = { recebidas, enviadas, historico };
   const lista = listas[aba];
@@ -106,6 +124,20 @@ export default function MinhasTrocas() {
     }
   };
 
+  const enviarAvaliacao = async ({ nota, comentario }) => {
+    setEnviandoAvaliacao(true);
+    try {
+      await criarAvaliacao(usuario, avaliandoTroca, { nota, comentario });
+      setAviso("Avaliação enviada! Obrigado pelo feedback.");
+      setAvaliandoTroca(null);
+    } catch (err) {
+      console.error("Erro ao avaliar:", err);
+      setAviso(mensagemDeErro(err));
+    } finally {
+      setEnviandoAvaliacao(false);
+    }
+  };
+
   const abas = [
     ["recebidas", `Recebidas (${recebidas.length})`],
     ["enviadas", `Enviadas (${enviadas.length})`],
@@ -119,6 +151,11 @@ export default function MinhasTrocas() {
         Acompanhe as solicitações que você recebeu e enviou.
         {pendentesParaMim > 0 && (
           <strong className="text-body"> Você tem {pendentesParaMim} aguardando resposta.</strong>
+        )}
+        {concluidasSemMinhaAvaliacao > 0 && (
+          <strong className="text-body">
+            {" "}Você tem {concluidasSemMinhaAvaliacao} troca(s) concluída(s) para avaliar (aba Histórico).
+          </strong>
         )}
       </p>
 
@@ -169,9 +206,11 @@ export default function MinhasTrocas() {
           lista.map((t) => {
             const euSolicitei = t.solicitanteId === usuario.id;
             const outroNome = euSolicitei ? t.destinatarioNome : t.solicitanteNome;
+            const outroId = euSolicitei ? t.destinatarioId : t.solicitanteId;
             const ocupado = ocupadoId === t.id;
             const temConversa = conversas.some((c) => c.id === t.id);
             const podeConversar = ativa(t) || t.status === STATUS.concluida || temConversa;
+            const minhaAvaliacao = avaliacoesFeitas.get(t.id);
 
             return (
               <div key={t.id} className="col-12 col-lg-6">
@@ -181,7 +220,9 @@ export default function MinhasTrocas() {
                       <div className="d-flex align-items-center gap-2">
                         <span className="avatar">{iniciais(outroNome)}</span>
                         <div>
-                          <p className="small fw-bold mb-0 lh-sm">{outroNome}</p>
+                          <p className="small fw-bold mb-0 lh-sm">
+                            <Link to={caminhoPerfil(outroId)} className="link-inline">{outroNome}</Link>
+                          </p>
                           <p className="small text-secondary mb-0 lh-sm">
                             {euSolicitei ? "Você solicitou" : "Solicitou a você"}
                           </p>
@@ -206,6 +247,12 @@ export default function MinhasTrocas() {
                       {t.status === STATUS.cancelada && ` · Cancelada em ${formatarDataHora(t.canceladaEmMs)}`}
                       {t.status === STATUS.aceita && ` · Aceita em ${formatarDataHora(t.respondidaEmMs)}`}
                     </p>
+
+                    {t.status === STATUS.concluida && minhaAvaliacao && (
+                      <p className="small mt-2 mb-0 d-flex align-items-center gap-2">
+                        Sua avaliação: <Estrelas valor={minhaAvaliacao.nota} />
+                      </p>
+                    )}
                   </div>
 
                   <div className="d-flex flex-wrap justify-content-end gap-2 mt-3">
@@ -259,6 +306,12 @@ export default function MinhasTrocas() {
                       </button>
                     )}
 
+                    {t.status === STATUS.concluida && !minhaAvaliacao && (
+                      <button className="btn btn-brand btn-sm" disabled={ocupado} onClick={() => setAvaliandoTroca(t)}>
+                        ★ Avaliar {outroNome.split(" ")[0]}
+                      </button>
+                    )}
+
                     {podeConversar && (
                       <button className="btn btn-line btn-sm" disabled={ocupado} onClick={() => abrirConversa(t)}>
                         {temConversa ? "Abrir conversa" : "Conversar"}
@@ -270,6 +323,20 @@ export default function MinhasTrocas() {
             );
           })}
       </div>
+
+      {avaliandoTroca && (
+        <AvaliacaoModal
+          troca={avaliandoTroca}
+          outroNome={
+            avaliandoTroca.solicitanteId === usuario.id
+              ? avaliandoTroca.destinatarioNome
+              : avaliandoTroca.solicitanteNome
+          }
+          enviando={enviandoAvaliacao}
+          onEnviar={enviarAvaliacao}
+          onFechar={() => setAvaliandoTroca(null)}
+        />
+      )}
 
       {aviso && (
         <div className="toast-container position-fixed bottom-0 end-0 p-3" style={{ zIndex: 2000 }}>

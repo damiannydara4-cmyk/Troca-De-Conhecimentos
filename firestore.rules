@@ -251,6 +251,46 @@ service cloud.firestore {
       }
     }
 
+        // =====================================================================
+    // ETAPA 9 — AVALIAÇÕES (coleção "reviews")
+    // O id é "{trocaId}_{avaliadorId}": cada pessoa avalia cada troca UMA vez só.
+    // =====================================================================
+
+    function avaliacaoValida(avaliacaoId, d) {
+      let troca = get(/databases/$(database)/documents/exchanges/$(d.exchangeId)).data;
+      return d.keys().hasOnly(['exchangeId', 'avaliadorId', 'avaliadorNome', 'avaliadoId', 'avaliadoNome',
+                               'assunto', 'nota', 'comentario', 'criadoEm'])
+        && d.keys().hasAll(['exchangeId', 'avaliadorId', 'avaliadorNome', 'avaliadoId', 'avaliadoNome',
+                            'assunto', 'nota', 'criadoEm'])
+        // id fixo = sem duplicatas
+        && avaliacaoId == d.exchangeId + '_' + request.auth.uid
+        // só troca CONCLUÍDA, e só quem participou avalia o outro participante
+        && troca.status == 'concluida'
+        && d.avaliadorId == request.auth.uid
+        && request.auth.uid in [troca.solicitanteId, troca.destinatarioId]
+        && d.avaliadoId in [troca.solicitanteId, troca.destinatarioId]
+        && d.avaliadoId != request.auth.uid
+        // nomes e assunto idênticos aos da troca (ninguém inventa)
+        && d.avaliadorNome == (request.auth.uid == troca.solicitanteId ? troca.solicitanteNome : troca.destinatarioNome)
+        && d.avaliadoNome == (request.auth.uid == troca.solicitanteId ? troca.destinatarioNome : troca.solicitanteNome)
+        && d.assunto == troca.conhecimentoOferecidoTitulo + ' ⇄ ' + troca.conhecimentoDesejadoTitulo
+        // nota inteira de 1 a 5; comentário opcional de até 500 caracteres
+        && d.nota is int && d.nota >= 1 && d.nota <= 5
+        && (!('comentario' in d) || (d.comentario is string && d.comentario.size() >= 1 && d.comentario.size() <= 500))
+        && d.criadoEm == request.time;
+    }
+
+    match /reviews/{avaliacaoId} {
+      // Avaliações aparecem nos perfis: qualquer usuário logado e verificado pode ler
+      allow read: if verificado();
+
+      allow create: if verificado() && avaliacaoValida(avaliacaoId, request.resource.data);
+
+      // Avaliação não se edita nem se apaga (a reputação não pode ser manipulada depois)
+      allow update: if false;
+      allow delete: if false;
+    }
+
     // Qualquer coleção sem regra acima fica BLOQUEADA (padrão do Firestore).
   }
 }

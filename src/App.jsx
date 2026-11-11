@@ -10,6 +10,7 @@ import MeusConhecimentos from "./pages/MeusConhecimentos.jsx";
 import MinhasTrocas from "./pages/MinhasTrocas.jsx";
 import Conversas from "./pages/Conversas.jsx";
 import ConversaChat from "./pages/ConversaChat.jsx";
+import PerfilUsuario from "./pages/PerfilUsuario.jsx";
 import FaleComEquipe from "./pages/FaleComEquipe.jsx";
 import MensagemEnviada from "./pages/MensagemEnviada.jsx";
 import Login from "./pages/Login.jsx";
@@ -39,6 +40,7 @@ export default function App() {
           <Route path={ROTAS.minhasTrocas} element={<MinhasTrocas />} />
           <Route path={ROTAS.conversas} element={<Conversas />} />
           <Route path={ROTAS.conversa} element={<ConversaChat />} />
+          <Route path={ROTAS.perfil} element={<PerfilUsuario />} />
         </Route>
 
         {/* Endereço inexistente volta para o início */}

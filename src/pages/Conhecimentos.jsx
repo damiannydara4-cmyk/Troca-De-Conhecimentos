@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { ROTAS } from "../routes.js";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ROTAS, caminhoPerfil } from "../routes.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import {
   TIPOS,
@@ -326,7 +326,9 @@ export default function Conhecimentos() {
                     <div className="d-flex align-items-center gap-2">
                       <span className="avatar">{iniciais(k.autor)}</span>
                       <div>
-                        <p className="small fw-bold mb-0 lh-sm">{k.autor}</p>
+                        <p className="small fw-bold mb-0 lh-sm">
+                          <Link to={caminhoPerfil(k.donoId)} className="link-inline">{k.autor}</Link>
+                        </p>
                         {k.cargo && <p className="small text-secondary mb-0 lh-sm">{k.cargo}</p>}
                       </div>
                     </div>

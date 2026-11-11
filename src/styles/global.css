@@ -587,3 +587,27 @@ section[id] { scroll-margin-top: 80px; }
 .bolha--minha  { align-self: flex-end; background: var(--indigo); color: #fff; border-bottom-right-radius: 4px; }
 .bolha--outra  { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 4px; }
 .bolha__meta   { display: block; font-size: .68rem; opacity: .75; margin-top: .2rem; }
+
+/* ---------- 12. Avaliações e perfil ---------- */
+.estrelas { display: inline-flex; gap: 2px; line-height: 1; }
+.estrela { color: #D1D5DB; }
+.estrela--cheia { color: #F5B301; }
+.estrela-btn {
+  background: none;
+  border: 0;
+  padding: 0 2px;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: #D1D5DB;
+  cursor: pointer;
+  transition: transform .1s ease;
+}
+.estrela-btn:hover { transform: scale(1.15); }
+.estrela-btn.estrela--cheia { color: #F5B301; }
+.estrela-btn:focus-visible { outline: 0; box-shadow: 0 0 0 .25rem var(--ring); border-radius: 6px; }
+
+.avatar--grande { width: 72px; height: 72px; font-size: 1.5rem; }
+.reputacao-nota { font-size: 2.4rem; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+
+.barra-reputacao { height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.barra-reputacao__preenchida { height: 100%; background: var(--green); border-radius: 999px; }git status  
