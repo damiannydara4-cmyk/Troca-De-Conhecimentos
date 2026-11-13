@@ -291,6 +291,25 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // =====================================================================
+    // ETAPA 11 — CONTATOS (coleção "contacts")
+    // Formulário de contato: qualquer pessoa pode enviar; apenas admins leem.
+    // =====================================================================
+    match /contacts/{contatoId} {
+      // Qualquer pessoa (mesmo não logada) pode criar uma mensagem de contato
+      allow create: if request.resource.data.keys().hasOnly(['nome', 'email', 'assunto', 'mensagem', 'criadoEm', 'lida'])
+        && request.resource.data.keys().hasAll(['nome', 'email', 'assunto', 'mensagem', 'criadoEm', 'lida'])
+        && request.resource.data.nome is string && request.resource.data.nome.size() >= 2
+        && request.resource.data.email is string && request.resource.data.email.size() >= 5
+        && request.resource.data.assunto is string && request.resource.data.assunto.size() >= 2
+        && request.resource.data.mensagem is string && request.resource.data.mensagem.size() >= 10
+        && request.resource.data.lida == false
+        && request.resource.data.criadoEm == request.time;
+
+      // Leitura bloqueada para usuários comuns (somente via Console/Admin SDK)
+      allow read, update, delete: if false;
+    }
+
     // Qualquer coleção sem regra acima fica BLOQUEADA (padrão do Firestore).
   }
 }

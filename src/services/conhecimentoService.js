@@ -2,6 +2,7 @@ import {
   addDoc,
   collection,
   doc,
+  getCountFromServer,
   getDocs,
   orderBy,
   query,
@@ -114,3 +115,18 @@ export async function excluirConhecimento(id) {
     atualizadoEm: serverTimestamp(),
   });
 }
+
+/* Conta totais reais para a tela de Início.
+   Retorna { totalConhecimentos, totalCategoriasAtivas }.
+   Usa getCountFromServer (eficiente — não baixa os documentos). */
+export async function contarConhecimentos() {
+  const [snapConhecimentos, snapCategorias] = await Promise.all([
+    getCountFromServer(query(collection(db, "knowledge"), where("ativo", "==", true))),
+    getCountFromServer(collection(db, "categories")),
+  ]);
+
+  return {
+    totalConhecimentos: snapConhecimentos.data().count,
+    totalCategorias: snapCategorias.data().count,
+  };
+}
